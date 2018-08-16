@@ -48,6 +48,92 @@ This interface is used to get the version information of the connected node in c
 | :---: | :-------------------------------------------: |
 | str   | the version information of the connected node |
 
+## network.get_node_count
+
+```python
+
+from ontology.ont_sdk import OntologySdk
+
+rpc_address = 'http://polaris3.ont.io:20336'
+sdk = OntologySdk()
+sdk.rpc.set_address(rpc_address)
+count = sdk.rpc.get_node_count()
+```
+
+This interface is used to get the current number of connections for the node in current network.
+
+### Parameters
+
+| Parameter | Type  | Description |
+| :-------: | :---: | :---------: |
+|           |       |             |
+
+### Return Value
+
+| Type  | Description               |
+| :---: | :-----------------------: |
+| int   | the number of connections |
+
+## network.get_gas_price
+
+```python
+
+from ontology.ont_sdk import OntologySdk
+
+rpc_address = 'http://polaris3.ont.io:20336'
+sdk = OntologySdk()
+sdk.rpc.set_address(rpc_address)
+price = sdk.rpc.get_gas_price()
+```
+
+This interface is used to get the gas price in current network.
+
+### Parameters
+
+| Parameter | Type  | Description |
+| :-------: | :---: | :---------: |
+|           |       |             |
+
+### Return Value
+
+| Type  | Description            |
+| :---: | :--------------------: |
+| int   | the value of gas price |
+
+## network.get_network_id
+
+```python
+
+from ontology.ont_sdk import OntologySdk
+
+rpc_address = 'http://polaris3.ont.io:20336'
+sdk = OntologySdk()
+sdk.rpc.set_address(rpc_address)
+network_id = sdk.rpc.get_network_id()
+```
+
+This interface is used to get the network id of current network.
+
+### Parameters
+
+| Parameter | Type  | Description |
+| :-------: | :---: | :---------: |
+|           |       |             |
+
+### Return Value
+
+| Type  | Description                       |
+| :---: | :-------------------------------: |
+| int   | the network id of current network |
+
+
+
+
+
+
+
+
+
 ## network.get_block_by_hash
 
 ```python
@@ -64,8 +150,8 @@ This interface is used to get the block information by hexadecimal block hash va
 
 ### Parameters
 
-| Parameter  | Type  | Description                         |
-| :--------: | :---: | :---------------------------------: |
+| Parameter  | Type  | Description                       |
+| :--------: | :---: | :-------------------------------: |
 | block_hash | str   | a hexadecimal value of block hash |
 
 ### Return Value
