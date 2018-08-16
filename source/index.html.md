@@ -66,7 +66,7 @@ This interface is used to get the block information by hexadecimal block hash va
 
 | Parameter  | Type  | Description                         |
 | :--------: | :---: | :---------------------------------: |
-| block_hash | str   | the hexadecimal value of block hash |
+| block_hash | str   | a hexadecimal value of block hash |
 
 ### Return Value
 
@@ -90,9 +90,9 @@ This interface is used to get the block information by block height in current n
 
 ### Parameters
 
-| Parameter | Type  | Description            |
-| :-------: | :---: | :--------------------: |
-| height    | int   | a decimal height value |
+| Parameter | Type  | Description                  |
+| :-------: | :---: | :--------------------------: |
+| height    | int   | a decimal block height value |
 
 ### Return Value
 
@@ -230,8 +230,8 @@ This interface is used to get the the allowance from transfer-from accout to tra
 
 ### Return Value
 
-| Type  | Description                                                            |
-| :---: | :--------------------------------------------------------------------: |
+| Type  | Description                                                             |
+| :---: | :---------------------------------------------------------------------: |
 | str   | the decimal allowance from transfer-from account to transfer-to account |
 
 ## sdk.rpc.get_storage
