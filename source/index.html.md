@@ -169,7 +169,7 @@ rpc_address = 'http://polaris3.ont.io:20336'
 sdk = OntologySdk()
 sdk.rpc.set_address(rpc_address)
 height = 0
-block = sdk.rpc.get_block_by_hash(height)
+block = sdk.rpc.get_block_by_height(height)
 ```
 
 This interface is used to get the block information by block height in current network.
