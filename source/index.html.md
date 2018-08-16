@@ -410,9 +410,9 @@ This interface is used to send the transaction into the network.
 
 ### Parameters
 
-| Parameter | Type        | Description          |
-| :-------: | :---------: | :------------------: |
-| tx        | Transaction | a Transaction object |
+| Parameter | Type        | Description                                 |
+| :-------: | :---------: | :-----------------------------------------: |
+| tx        | Transaction | a Transaction object in ontology Python SDK |
 
 ### Return Value
 
@@ -444,9 +444,9 @@ This interface is used to send the transaction that is prepare to execute.
 
 ### Parameters
 
-| Parameter | Type        | Description          |
-| :-------: | :---------: | :------------------: |
-| tx        | Transaction | a Transaction object |
+| Parameter | Type        | Description                                 |
+| :-------: | :---------: | :-----------------------------------------: |
+| tx        | Transaction | a Transaction object in ontology Python SDK |
 
 ### Return Value
 
