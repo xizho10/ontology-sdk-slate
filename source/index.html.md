@@ -248,7 +248,7 @@ key = "746f74616c537570706c79"
 value = sdk.rpc.get_storage(contract_address, key)
 ```
 
-This interface is used to get the corresponding stored value according based on hexadecimal contract address and stored key.
+This interface is used to get the corresponding stored value based on hexadecimal contract address and stored key.
 
 ### Parameters
 
