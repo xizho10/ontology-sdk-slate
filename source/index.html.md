@@ -232,7 +232,7 @@ This interface is used to get the the allowance from transfer-from accout to tra
 
 | Type  | Description                                                            |
 | :---: | :--------------------------------------------------------------------: |
-| str   | the decimal allowance from transfer-from accout to transfer-to account |
+| str   | the decimal allowance from transfer-from account to transfer-to account |
 
 ## sdk.rpc.get_storage
 
