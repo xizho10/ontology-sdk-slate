@@ -276,13 +276,13 @@ tx_hash = "65d3b2d3237743f21795e344563190ccbe50e9930520b8525142b075433fdd74"
 event = sdk.rpc.get_smart_contract_event_by_tx_hash(tx_hash)
 ```
 
-This interface is used to get the corresponding smart contract event based on the hexadecimal transaction hash vlaue.
+This interface is used to get the corresponding smart contract event based on the hexadecimal transaction hash value.
 
 ### Parameters
 
 | Parameter | Type  | Description                        |
 | :-------: | :---: | :--------------------------------: |
-| tx_hash   | str   | hexadecimal transaction hash vlaue |
+| tx_hash   | str   | hexadecimal transaction hash value |
 
 ### Return Value
 
@@ -324,7 +324,7 @@ This interface is used to get the corresponding transaction information based on
 
 | Parameter | Type  | Description                        |
 | :-------: | :---: | :--------------------------------: |
-| tx_hash   | str   | hexadecimal transaction hash vlaue |
+| tx_hash   | str   | hexadecimal transaction hash value |
 
 ### Return Value
 
@@ -344,6 +344,8 @@ sdk.rpc.set_address(rpc_address)
 contract_address = "0239dcf9b4a46f15c5f23f20d52fac916a0bac0d"
 contract = sdk.rpc.get_smart_contract(contract_address)
 ```
+
+This interface is used to get the information of smart contract based on the specified hexadecimal hash value.
 
 ### Parameters
 
@@ -376,7 +378,7 @@ This interface is used to get the corresponding merkle proof based on the specif
 
 | Parameter | Type  | Description                        |
 | :-------: | :---: | :--------------------------------: |
-| tx_hash   | str   | hexadecimal transaction hash vlaue |
+| tx_hash   | str   | hexadecimal transaction hash value |
 
 
 ### Return Value
@@ -418,7 +420,7 @@ This interface is used to send the transaction into the network.
 
 | Parameter | Type  | Description                        |
 | :-------: | :---: | :--------------------------------: |
-| tx_hash   | str   | hexadecimal transaction hash vlaue |
+| tx_hash   | str   | hexadecimal transaction hash value |
 
 ## sdk.rpc.send_raw_transaction_pre_exec
 
