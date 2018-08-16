@@ -286,9 +286,9 @@ This interface is used to get the corresponding smart contract event based on th
 
 ### Return Value
 
-| Type  | Description              |
-| :---: | :----------------------: |
-| dict  | the smart contract event |
+| Type  | Description                                                |
+| :---: | :--------------------------------------------------------: |
+| dict  | the information of smart contract event in dictionary form |
 
 ## sdk.rpc.get_smart_contract_event_by_height
 
@@ -315,7 +315,7 @@ This interface is used to get the corresponding smart contract event based on th
 
 | Type  | Description                                                |
 | :---: | :--------------------------------------------------------: |
-| dict  | the information of smart contract event in dictionary form |  
+| dict  | the information of smart contract event in dictionary form |
 
 ## sdk.rpc.get_raw_transaction
 
