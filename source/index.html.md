@@ -305,6 +305,18 @@ event = sdk.rpc.get_smart_contract_event_by_height(height)
 
 This interface is used to get the corresponding smart contract event based on the height of block.
 
+### Parameters
+
+| Parameter | Type  | Description            |
+| :-------: | :---: | :--------------------: |
+| height    | int   | a decimal height value |
+
+### Return Value
+
+| Type  | Description                                                |
+| :---: | :--------------------------------------------------------: |
+| dict  | the information of smart contract event in dictionary form |  
+
 ## sdk.rpc.get_raw_transaction
 
 ```python
