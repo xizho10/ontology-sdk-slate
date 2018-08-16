@@ -20,9 +20,9 @@ This is a comprehensive Java library for the Ontology blockchain,which is releas
 
 The Ontology official Python SDK is a comprehensive SDK which is based on Python3.x. Currently, it supports local wallet management, digital identity management, digital asset management, deployment and envoke for smart contract, and communication with the Ontology blockchain. The future will also support more functions and applications.
 
-# RPC interface
+# Network
 
-## sdk.rpc.get_version
+## network.get_version
 
 ```python
 
@@ -48,7 +48,7 @@ This interface is used to get the version information of the connected node in c
 | :---: | :-------------------------------------------: |
 | str   | the version information of the connected node |
 
-## sdk.rpc.get_block_by_hash
+## network.get_block_by_hash
 
 ```python
 from ontology.ont_sdk import OntologySdk
@@ -74,7 +74,7 @@ This interface is used to get the block information by hexadecimal block hash va
 | :---: | :-----------------------------------------------: |
 | dict  | the block information of the specified block hash |
 
-## sdk.rpc.get_block_by_height
+## network.get_block_by_height
 
 ```python
 from ontology.ont_sdk import OntologySdk
@@ -100,7 +100,7 @@ This interface is used to get the block information by block height in current n
 | :---: | :-------------------------------------------------: |
 | dict  | the block information of the specified block height |
 
-## sdk.rpc.get_block_count
+## network.get_block_count
 
 ```python
 
@@ -126,7 +126,7 @@ This interface is used to get the decimal block number in current network.
 | :---: | :---------------------------------------------------: |
 | int   | the decimal total number of blocks in current network |
 
-## sdk.rpc.get_current_block_hash
+## network.get_current_block_hash
 
 ```python
 
@@ -152,7 +152,7 @@ This interface is used to get the hexadecimal hash value of the highest block in
 | :---: | :----------------------------------------------------------------: |
 | dict  | the hexadecimal hash value of the highest block in current network |
 
-## sdk.rpc.get_block_hash_by_height
+## network.get_block_hash_by_height
 
 ```python
 
@@ -179,7 +179,7 @@ This interface is used to get the hexadecimal hash value of specified block heig
 | :---: | :------------------------------------------------------: |
 | str   | the hexadecimal hash value of the specified block height |
 
-## sdk.rpc.get_balance()
+## network.get_balance()
 
 ```python
 
@@ -208,7 +208,7 @@ This interface is used to get the account balance of specified base58 encoded ad
 | :---: | :---------------------------------------------: |
 | dict  | the value of account balance in dictionary form |
 
-## sdk.rpc.get_allowance
+## network.get_allowance
 
 ```python
 from ontology.ont_sdk import OntologySdk
@@ -234,7 +234,7 @@ This interface is used to get the the allowance from transfer-from accout to tra
 | :---: | :---------------------------------------------------------------------: |
 | str   | the decimal allowance from transfer-from account to transfer-to account |
 
-## sdk.rpc.get_storage
+## network.get_storage
 
 ```python
 
@@ -263,7 +263,7 @@ This interface is used to get the corresponding stored value based on hexadecima
 | :---: | :---------------------------------------------------------------: |
 | int   | the stored value according to the contract address and stored key |
 
-## sdk.rpc.get_smart_contract_event_by_tx_hash
+## network.get_smart_contract_event_by_tx_hash
 
 ```python
 
@@ -290,7 +290,7 @@ This interface is used to get the corresponding smart contract event based on th
 | :---: | :--------------------------------------------------------: |
 | dict  | the information of smart contract event in dictionary form |
 
-## sdk.rpc.get_smart_contract_event_by_height
+## network.get_smart_contract_event_by_height
 
 ```python
 
@@ -317,7 +317,7 @@ This interface is used to get the corresponding smart contract event based on th
 | :---: | :--------------------------------------------------------: |
 | dict  | the information of smart contract event in dictionary form |
 
-## sdk.rpc.get_raw_transaction
+## network.get_raw_transaction
 
 ```python
 
@@ -344,7 +344,7 @@ This interface is used to get the corresponding transaction information based on
 | :---: | :-----------------------------------------------: |
 | dict  | the information of transaction in dictionary form |
 
-## sdk.rpc.get_smart_contract
+## network.get_smart_contract
 
 ```python
 
@@ -371,7 +371,7 @@ This interface is used to get the information of smart contract based on the spe
 | :---: | :--------------------------------------------------: |
 | dict  | the information of smart contract in dictionary form |
 
-## sdk.rpc.get_merkle_proof
+## network.get_merkle_proof
 
 ```python
 
@@ -399,7 +399,7 @@ This interface is used to get the corresponding merkle proof based on the specif
 | :---: | :---------------------------------: |
 | dict  | the merkle proof in dictionary form |
 
-## sdk.rpc.send_raw_transaction
+## network.send_raw_transaction
 
 ```python
 
@@ -434,7 +434,7 @@ This interface is used to send the transaction into the network.
 | :-------: | :---: | :--------------------------------: |
 | tx_hash   | str   | hexadecimal transaction hash value |
 
-## sdk.rpc.send_raw_transaction_pre_exec
+## network.send_raw_transaction_pre_exec
 
 ```python
 
@@ -473,3 +473,4 @@ This interface is used to send the transaction that is prepare to execute.
 # Asset interface
 
 # Identity interface
+
