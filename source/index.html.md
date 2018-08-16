@@ -64,9 +64,9 @@ This interface is used to get the block information by hexadecimal block hash va
 
 ### Parameters
 
-| Parameter  | Type  | Description                    |
-| :--------: | :---: | :----------------------------: |
-| block_hash | str   | a hexadecimal block hash value |
+| Parameter  | Type  | Description                         |
+| :--------: | :---: | :---------------------------------: |
+| block_hash | str   | the hexadecimal value of block hash |
 
 ### Return Value
 
@@ -122,9 +122,9 @@ This interface is used to get the decimal block number in current network.
 
 ### Return Value
 
-| Type  | Description                      |
-| :---: | :------------------------------: |
-| int   | a decimal total number of blocks |
+| Type  | Description                                           |
+| :---: | :---------------------------------------------------: |
+| int   | the decimal total number of blocks in current network |
 
 ## sdk.rpc.get_current_block_hash
 
@@ -148,9 +148,9 @@ This interface is used to get the hexadecimal hash value of the highest block in
 
 ### Return Value
 
-| Type  | Description                                                      |
-| :---: | :--------------------------------------------------------------: |
-| dict  | a hexadecimal hash value of the highest block in current network |
+| Type  | Description                                                        |
+| :---: | :----------------------------------------------------------------: |
+| dict  | the hexadecimal hash value of the highest block in current network |
 
 ## sdk.rpc.get_block_hash_by_height
 
@@ -175,9 +175,9 @@ This interface is used to get the hexadecimal hash value of specified block heig
 
 ### Return Value
 
-| Type  | Description                                            |
-| :---: | :----------------------------------------------------: |
-| str   | a hexadecimal hash value of the specified block height |
+| Type  | Description                                              |
+| :---: | :------------------------------------------------------: |
+| str   | the hexadecimal hash value of the specified block height |
 
 ## sdk.rpc.get_balance()
 
@@ -204,9 +204,9 @@ This interface is used to get the account balance of specified base58 encoded ad
 
 ### Return Value
 
-| Type  | Description                                       |
-| :---: | :-----------------------------------------------: |
-| dict  | an account balance value saved in dictionary form |
+| Type  | Description                                     |
+| :---: | :---------------------------------------------: |
+| dict  | the value of account balance in dictionary form |
 
 ## sdk.rpc.get_allowance
 
@@ -328,9 +328,9 @@ This interface is used to get the corresponding transaction information based on
 
 ### Return Value
 
-| Type  | Description                                    |
-| :---: | :--------------------------------------------: |
-| dict  | the transaction information in dictionary form |
+| Type  | Description                                       |
+| :---: | :-----------------------------------------------: |
+| dict  | the information of transaction in dictionary form |
 
 ## sdk.rpc.get_smart_contract
 
@@ -345,8 +345,6 @@ contract_address = "0239dcf9b4a46f15c5f23f20d52fac916a0bac0d"
 contract = sdk.rpc.get_smart_contract(contract_address)
 ```
 
-This interface is used to get the corresponding merkle proof based on the specified hexadecimal hash value.
-
 ### Parameters
 
 | Parameter        | Type  | Description            |
@@ -355,92 +353,104 @@ This interface is used to get the corresponding merkle proof based on the specif
 
 ### Return Value
 
+| Type  | Description                                          |
+| :---: | :--------------------------------------------------: |
+| dict  | the information of smart contract in dictionary form |
+
 ## sdk.rpc.get_merkle_proof
 
-### Parameters
+```python
 
-| Parameter | Type  | Description |
-| :-------: | :---: | :---------: |
-|           |       |             |
+from ontology.ont_sdk import OntologySdk
 
-This interface is used to get the corresponding transaction information based on the hexadecimal transaction hash
+rpc_address = 'http://polaris3.ont.io:20336'
+sdk = OntologySdk()
+sdk.rpc.set_address(rpc_address)
+tx_hash = "65d3b2d3237743f21795e344563190ccbe50e9930520b8525142b075433fdd74"
+proof = sdk.rpc.get_merkle_proof(tx_hash)
+```
 
-### Return Value
-
-
-## sdk.rpc.get_smart_contract_event_by_txhash ()
-
-### Parameters
-
-| Parameter | Type  | Description |
-| :-------: | :---: | :---------: |
-|           |       |             |
-
-### Return Value
-
-
-## sdk.rpc.get_smart_contract_event_by_block ()
+This interface is used to get the corresponding merkle proof based on the specified hexadecimal hash value.
 
 ### Parameters
 
-| Parameter | Type  | Description |
-| :-------: | :---: | :---------: |
-|           |       |             |
+| Parameter | Type  | Description                        |
+| :-------: | :---: | :--------------------------------: |
+| tx_hash   | str   | hexadecimal transaction hash vlaue |
+
 
 ### Return Value
 
+| Type  | Description                         |
+| :---: | :---------------------------------: |
+| dict  | the merkle proof in dictionary form |
 
-## sdk.rpc.get_raw_transaction ()
+## sdk.rpc.send_raw_transaction
+
+```python
+
+from ontology.ont_sdk import OntologySdk
+
+rpc_address = 'http://polaris3.ont.io:20336'
+sdk = OntologySdk()
+sdk.rpc.set_address(rpc_address)
+pri_key_1 = '75de8489fcb2dcaf2ef3cd607feffde18789de7da129b5e97c81e001793cb7cf'
+acct = Account(pri_key_1)
+length = 64
+pri_key_2 = get_random_str(length)
+acct2 = Account(pri_key_2)
+b58_address_1 = acct.get_address_base58()
+b58_address_2 = acct2.get_address_base58()
+tx = Asset.new_transfer_transaction("ont", b58_address_1, b58_address_2, 2, b58_address_1, 20000, 500)
+tx = sdk.sign_transaction(tx, acct)
+tx_hash = sdk.rpc.send_raw_transaction(tx)
+```
+
+This interface is used to send the transaction into the network.
 
 ### Parameters
 
-| Parameter | Type  | Description |
-| :-------: | :---: | :---------: |
-|           |       |             |
+| Parameter | Type        | Description          |
+| :-------: | :---------: | :------------------: |
+| tx        | Transaction | a Transaction object |
 
 ### Return Value
 
+| Parameter | Type  | Description                        |
+| :-------: | :---: | :--------------------------------: |
+| tx_hash   | str   | hexadecimal transaction hash vlaue |
 
-## sdk.rpc.get_smart_contract ()
+## sdk.rpc.send_raw_transaction_pre_exec
+
+```python
+
+from ontology.ont_sdk import OntologySdk
+
+rpc_address = 'http://polaris3.ont.io:20336'
+sdk = OntologySdk()
+sdk.rpc.set_address(rpc_address)
+pri_key_1 = '75de8489fcb2dcaf2ef3cd607feffde18789de7da129b5e97c81e001793cb7cf'
+acct = Account(pri_key_1)
+pri_key2 = get_random_str(64)
+acct2 = Account(pri_key2)
+b58_address_1 = acct.get_address_base58()
+b58_address_2 = acct2.get_address_base58()
+tx = Asset.new_transfer_transaction("ont", b58_address_1, b58_address_2, 2, b58_address_1, 20000, 500)
+tx = sdk.sign_transaction(tx, acct)
+result = sdk.rpc.send_raw_transaction_pre_exec(tx)
+```
+
+This interface is used to send the transaction that is prepare to execute.
 
 ### Parameters
 
-| Parameter | Type  | Description |
-| :-------: | :---: | :---------: |
-|           |       |             |
+| Parameter | Type        | Description          |
+| :-------: | :---------: | :------------------: |
+| tx        | Transaction | a Transaction object |
 
 ### Return Value
 
-
-## sdk.rpc.get_merkle_proof ()
-
-### Parameters
-
-| Parameter | Type  | Description |
-| :-------: | :---: | :---------: |
-|           |       |             |
-
-### Return Value
-
-
-## send_raw_transaction ()
-
-### Parameters
-
-| Parameter | Type  | Description |
-| :-------: | :---: | :---------: |
-|           |       |             |
-
-### Return Value
-
-
-## send_raw_transaction_preexec ()
-
-### Parameters
-
-| Parameter | Type  | Description |
-| :-------: | :---: | :---------: |
-|           |       |             |
-
-### Return Value
+| Type  | Description                                                    |
+| :---: | :------------------------------------------------------------: |
+| str   | the execution result of transaction that is prepare to execute |
 
