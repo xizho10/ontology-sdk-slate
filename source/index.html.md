@@ -126,14 +126,6 @@ This interface is used to get the network id of current network.
 | :---: | :-------------------------------: |
 | int   | the network id of current network |
 
-
-
-
-
-
-
-
-
 ## network.get_block_by_hash
 
 ```python
@@ -554,9 +546,14 @@ This interface is used to send the transaction that is prepare to execute.
 | :---: | :------------------------------------------------------------: |
 | str   | the execution result of transaction that is prepare to execute |
 
-# Asset
+# Wallet
 
-# Identity
+```python
+        wm = WalletManager()
+        path = os.path.join(os.getcwd(), 'test.json')
+        wm.open_wallet(path)
+        
+```
 
 # Message
 
