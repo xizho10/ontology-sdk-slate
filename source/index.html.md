@@ -548,14 +548,446 @@ This interface is used to send the transaction that is prepare to execute.
 
 # Wallet
 
+## import_account
+
 ```python
-        wm = WalletManager()
-        path = os.path.join(os.getcwd(), 'test.json')
-        wm.open_wallet(path)
-        
+wm = WalletManager()
+path = os.path.join(os.getcwd(), 'test.json')
+wm.open_wallet(path)
+label = 'label'
+encrypted_pri_key = 'Yl1e9ugbVADd8a2SbAQ56UfUvr3e9hD2eNXAM9xNjhnefB+YuNXDFvUrIRaYth+L'
+password = '1'
+b58_address = 'AazEvfQPcQ2GEFFPLF1ZLwQ7K5jDn81hve'
+b64_salt = 'pwLIUKAf2bAbTseH/WYrfQ=='
+wm.import_account(label, encrypted_pri_key, password, b58_address, b64_salt)
 ```
+
+This interface is used to import account by providing account data.
+
+### Parameters
+
+| Parameter              | Type  | Description                                                               |
+| :--------------------: | :---: | :-----------------------------------------------------------------------: |
+| label                  | str   | wallet label                                                              |
+| encrypted_pri_key: str | str   | an encrypted private key in base64 encoding from                          |
+| pwd                    | str   | a password which is used to encrypt and decrypt the private key           |
+| base58_address         | str   | a base58 encode  wallet address value                                     |
+| base64_salt            | str   | a base64 encode salt value which is used in the encryption of private key |
+
+### Return Value
+
+| Type        | Description                                                                            |
+| :---------: | :------------------------------------------------------------------------------------: |
+| AccountData | if succeed, return an data structure which contain the information of a wallet account |
+| None        | if failed, return a None object                                                        |
+
+## create_account
+
+```python
+wm = WalletManager()
+label = 'label'
+password = 'password'
+wm.create_account(label, password)
+accounts = wm.get_wallet().get_accounts()
+```
+
+This interface is used to create account by seeting password and label.
+
+### Parameters
+
+| Parameter              | Type  | Description                                                               |
+| :--------------------: | :---: | :-----------------------------------------------------------------------: |
+| label                  | str   | wallet label                                                              |
+| encrypted_pri_key: str | str   | an encrypted private key in base64 encoding from                          |
+| pwd                    | str   | a password which is used to encrypt and decrypt the private key           |
+| base58_address         | str   | a base58 encode  wallet address value                                     |
+| base64_salt            | str   | a base64 encode salt value which is used in the encryption of private key |
+
+### Return Value
+
+| Type        | Description                                                                            |
+| :---------: | :------------------------------------------------------------------------------------: |
+| AccountData | if succeed, return an data structure which contain the information of a wallet account |
+| None        | if failed, return a None object                                                        |
+
+## create_account_from_private_key
+
+```python
+wm = WalletManager()
+private_key = util.get_random_str(64)
+label = 'hello_account'
+password = 'password'
+account = wm.create_account_from_private_key(label, password, private_key)
+account_address = account.get_address()
+```
+
+This interface is used to create account by providing an encrypted private key and it's decrypt password.
 
 # Message
 
 # Smart Contract
 
+## OEP4
+
+### OEP4.get_name
+
+```python
+from ontology.ont_sdk import OntologySdk
+sdk = OntologySdk()
+remote_rpc_address = "http://polaris3.ont.io:20336"
+sdk.set_rpc(remote_rpc_address)
+contract_address = '6fe70af535887a820a13cfbaff6b0b505f855e5c'
+oep4 = sdk.neo_vm().oep4()
+oep4.set_contract_address(contract_address)
+oep4.get_name()
+```
+
+This interface is used to call the `Name` method in ope4 that return the name of an oep4 token.
+
+#### Parameters
+
+| Parameter | Type  | Description |
+| :-------: | :---: | :---------: |
+|           |       |             |
+
+#### Return Value
+
+| Type  | Description                        |
+| :---: | :--------------------------------: |
+| str   | the string name of the oep4 token. |
+
+### OEP4.get_symbol
+
+```python
+from ontology.ont_sdk import OntologySdk
+sdk = OntologySdk()
+remote_rpc_address = "http://polaris3.ont.io:20336"
+sdk.set_rpc(remote_rpc_address)
+contract_address = '6fe70af535887a820a13cfbaff6b0b505f855e5c'
+oep4 = sdk.neo_vm().oep4()
+oep4.set_contract_address(contract_address)
+oep4.get_symbol()
+```
+
+This interface is used to call the `Symbol` method in ope4 that return the symbol of an oep4 token.
+
+#### Parameters
+
+| Parameter | Type  | Description |
+| :-------: | :---: | :---------: |
+|           |       |             |
+
+#### Return Value
+
+| Type  | Description                             |
+| :---: | :-------------------------------------: |
+| str   | a short string symbol of the oep4 token |
+
+### OEP4.get_decimal
+
+```python
+from ontology.ont_sdk import OntologySdk
+sdk = OntologySdk()
+remote_rpc_address = "http://polaris3.ont.io:20336"
+sdk.set_rpc(remote_rpc_address)
+contract_address = '6fe70af535887a820a13cfbaff6b0b505f855e5c'
+oep4 = sdk.neo_vm().oep4()
+oep4.set_contract_address(contract_address)
+oep4.get_decimal()
+```
+
+This interface is used to call the `Decimal` method in ope4 that return the number of decimals used by the oep4 token.
+
+#### Parameters
+
+| Parameter | Type  | Description |
+| :-------: | :---: | :---------: |
+|           |       |             |
+
+#### Return Value
+
+| Type  | Description                                    |
+| :---: | :--------------------------------------------: |
+| int   | the number of decimals used by the oep4 token. |
+
+### OEP4.init()
+
+```python
+from ontology.ont_sdk import OntologySdk
+sdk = OntologySdk()
+remote_rpc_address = "http://polaris3.ont.io:20336"
+sdk.set_rpc(remote_rpc_address)
+contract_address = '6fe70af535887a820a13cfbaff6b0b505f855e5c'
+oep4 = sdk.neo_vm().oep4()
+oep4.set_contract_address(contract_address)
+private_key = '523c5fcf74823831756f0bcb3634234f10b3beb1c05595058534577752ad2d9f'
+acct = Account(private_key, SignatureScheme.SHA256withECDSA)
+gas_limit = 20000000
+gas_price = 500
+tx_hash = oep4.init(acct, acct, gas_limit, gas_price)
+```
+
+#### Parameters
+
+| Parameter | Type  | Description |
+| :-------: | :---: | :---------: |
+|           |       |             |
+
+#### Return Value
+
+| Type  | Description |
+| :---: | :---------: |
+|       |             |
+
+### OEP4.get_total_supply()
+
+```python
+from ontology.ont_sdk import OntologySdk
+sdk = OntologySdk()
+remote_rpc_address = "http://polaris3.ont.io:20336"
+sdk.set_rpc(remote_rpc_address)
+contract_address = '6fe70af535887a820a13cfbaff6b0b505f855e5c'
+oep4 = sdk.neo_vm().oep4()
+oep4.set_contract_address(contract_address)
+oep4.get_total_supply()
+```
+
+This interface is used to call the TotalSupply method in ope4 that return the total supply of the oep4 token.
+
+#### Parameters
+
+| Parameter | Type  | Description |
+| :-------: | :---: | :---------: |
+|           |       |             |
+
+#### Return Value
+
+| Type  | Description                        |
+| :---: | :--------------------------------: |
+| int   | the total supply of the oep4 token |
+
+### OEP4.balance_of()
+
+```python
+from ontology.ont_sdk import OntologySdk
+sdk = OntologySdk()
+remote_rpc_address = "http://polaris3.ont.io:20336"
+sdk.set_rpc(remote_rpc_address)
+contract_address = '6fe70af535887a820a13cfbaff6b0b505f855e5c'
+oep4 = sdk.neo_vm().oep4()
+oep4.set_contract_address(contract_address)
+private_key = "523c5fcf74823831756f0bcb3634234f10b3beb1c05595058534577752ad2d9f"
+acct = Account(private_key, SignatureScheme.SHA256withECDSA)
+b58_address = acct.get_address_base58()
+balance = oep4.balance_of(b58_address)
+```
+
+This interface is used to call the BalanceOf method in ope4 that query the ope4 token balance of the given base58 encode address.
+
+#### Parameters
+
+| Parameter   | Type  | Description               |
+| :---------: | :---: | :-----------------------: |
+| b58_address | str   | the base58 encode address |
+
+#### Return Value
+
+| Type  | Description                                         |
+| :---: | :-------------------------------------------------: |
+| int   | the oep4 token balance of the base58 encode address |
+
+### OEP4.transfer()
+
+```python
+from ontology.ont_sdk import OntologySdk
+sdk = OntologySdk()
+remote_rpc_address = "http://polaris3.ont.io:20336"
+sdk.set_rpc(remote_rpc_address)
+contract_address = '6fe70af535887a820a13cfbaff6b0b505f855e5c'
+oep4 = sdk.neo_vm().oep4()
+oep4.set_contract_address(contract_address)
+
+```
+
+This interface is used to call the Transfer method in ope4 that transfer an amount of tokens from one account to another account.
+
+#### Parameters
+
+| Parameter      | Type    | Description                                                                                |
+| :------------: | :-----: | :----------------------------------------------------------------------------------------: |
+| from_acct      | Account | an Account class that send the oep4 token                                                  |
+| b58_to_address | str     | a base58 encode address that receive the oep4 token                                        |
+| value          | int     | an int value that indicate the amount oep4 token that will be transfer in this transaction |
+| payer_acct     | Account | an Account class that used to pay for the transaction                                      |
+| gas_limit      | int     | an int value that indicate the gas limit                                                   |
+| gas_price      | int     | an int value that indicate the gas price                                                   |
+
+#### Return Value
+
+| Type  | Description                            |
+| :---: | :------------------------------------: |
+| str   | the hexadecimal transaction hash value |
+
+### OEP4.transfer_multi()
+
+```python
+from ontology.ont_sdk import OntologySdk
+sdk = OntologySdk()
+remote_rpc_address = "http://polaris3.ont.io:20336"
+sdk.set_rpc(remote_rpc_address)
+contract_address = '6fe70af535887a820a13cfbaff6b0b505f855e5c'
+oep4 = sdk.neo_vm().oep4()
+oep4.set_contract_address(contract_address)
+private_key1 = "523c5fcf74823831756f0bcb3634234f10b3beb1c05595058534577752ad2d9f"
+private_key2 = "75de8489fcb2dcaf2ef3cd607feffde18789de7da129b5e97c81e001793cb7cf"
+private_key3 = "1383ed1fe570b6673351f1a30a66b21204918ef8f673e864769fa2a653401114"
+acct1 = Account(private_key1, SignatureScheme.SHA256withECDSA)
+acct2 = Account(private_key2, SignatureScheme.SHA256withECDSA)
+acct3 = Account(private_key3, SignatureScheme.SHA256withECDSA)
+args = list()
+
+b58_from_address1 = acct1.get_address_base58()
+b58_from_address2 = acct2.get_address_base58()
+
+b58_to_address1 = acct2.get_address_base58()
+b58_to_address2 = acct3.get_address_base58()
+
+value_list = [1, 2]
+
+transfer1 = [b58_from_address1, b58_to_address1, value_list[0]]
+transfer2 = [b58_from_address2, b58_to_address2, value_list[1]]
+signers = [acct1, acct2, acct3]
+args.append(transfer1)
+args.append(transfer2)
+
+gas_limit = 20000000
+gas_price = 500
+
+tx_hash = oep4.transfer_multi(args, signers[0], signers, gas_limit, gas_price)
+```
+
+#### Parameters
+
+| Parameter  | Type    | Description                                                                                                                                                                  |
+| :--------: | :-----: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| args       | list    | a parameter list with each item contains three sub-items:base58 encode transaction sender address,base58 encode transaction receiver address, amount of token in transaction |
+| payer_acct | Account | an Account class that used to pay for the transaction                                                                                                                        |
+| signers    | list    | a signer list used to sign this transaction which should contained all sender in args                                                                                        |
+| gas_limit  | int     | an int value that indicate the gas limit                                                                                                                                     |
+| gas_price  | int     | an int value that indicate the gas price                                                                                                                                     |
+
+#### Return Value
+
+| Type  | Description                            |
+| :---: | :------------------------------------: |
+| str   | the hexadecimal transaction hash value |
+
+### OEP4.approve()
+
+```python
+from ontology.ont_sdk import OntologySdk
+sdk = OntologySdk()
+remote_rpc_address = "http://polaris3.ont.io:20336"
+sdk.set_rpc(remote_rpc_address)
+contract_address = '6fe70af535887a820a13cfbaff6b0b505f855e5c'
+oep4 = sdk.neo_vm().oep4()
+oep4.set_contract_address(contract_address)
+private_key1 = "523c5fcf74823831756f0bcb3634234f10b3beb1c05595058534577752ad2d9f"
+private_key2 = "75de8489fcb2dcaf2ef3cd607feffde18789de7da129b5e97c81e001793cb7cf"
+owner_acct = Account(private_key1, SignatureScheme.SHA256withECDSA)
+spender = Account(private_key2, SignatureScheme.SHA256withECDSA)
+payer_acct = owner_acct
+b58_spender_address = spender.get_address_base58()
+amount = 100
+gas_limit = 20000000
+gas_price = 500
+tx_hash = oep4.approve(owner_acct, b58_spender_address, amount, payer_acct, gas_limit, gas_price)
+```
+
+This interface is used to call the Approve method in ope4 that allows spender to withdraw a certain amount of oep4 token from owner account multiple times.
+
+**Attention**: If this function is called again, it will overwrite the current allowance with new value.
+
+#### Parameters
+
+| Parameter           | Type    | Description                                                                                |
+| :-----------------: | :-----: | :----------------------------------------------------------------------------------------: |
+| owner_acct          | Account | an Account class that indicate the owner                                                   |
+| b58_spender_address | str     | a base58 encode address that be allowed to spend the oep4 token in owner's account         |
+| amount              | int     | an int value that indicate the amount oep4 token that will be transfer in this transaction |
+| payer_acct          | Account | an Account class that used to pay for the transaction                                      |
+| gas_limit           | int     | an int value that indicate the gas limit                                                   |
+| gas_price           | int     | an int value that indicate the gas price                                                   |
+
+#### Return Value
+
+| Type  | Description                            |
+| :---: | :------------------------------------: |
+| str   | the hexadecimal transaction hash value |
+
+### OEP4.allowance()
+
+```python
+from ontology.ont_sdk import OntologySdk
+sdk = OntologySdk()
+remote_rpc_address = "http://polaris3.ont.io:20336"
+sdk.set_rpc(remote_rpc_address)
+contract_address = '6fe70af535887a820a13cfbaff6b0b505f855e5c'
+oep4 = sdk.neo_vm().oep4()
+oep4.set_contract_address(contract_address)
+
+```
+
+#### Parameters
+
+| Parameter           | Type  | Description                                              |
+| :-----------------: | :---: | :------------------------------------------------------: |
+| b58_owner_address   | str   | a base58 encode address that represent owner's account   |
+| b58_spender_address | str   | a base58 encode address that represent spender's account |
+
+#### Return Value
+
+| Type  | Description                                                                          |
+| :---: | :----------------------------------------------------------------------------------: |
+| int   | the amount of oep4 token that owner allow spender to transfer from the owner account |
+
+### OEP4.transfer_from()
+
+```python
+from ontology.ont_sdk import OntologySdk
+sdk = OntologySdk()
+remote_rpc_address = "http://polaris3.ont.io:20336"
+sdk.set_rpc(remote_rpc_address)
+contract_address = '6fe70af535887a820a13cfbaff6b0b505f855e5c'
+oep4 = sdk.neo_vm().oep4()
+oep4.set_contract_address(contract_address)
+private_key1 = "523c5fcf74823831756f0bcb3634234f10b3beb1c05595058534577752ad2d9f"
+private_key2 = "75de8489fcb2dcaf2ef3cd607feffde18789de7da129b5e97c81e001793cb7cf"
+private_key3 = "1383ed1fe570b6673351f1a30a66b21204918ef8f673e864769fa2a653401114"
+spender_acct = Account(private_key2, SignatureScheme.SHA256withECDSA)
+from_acct = Account(private_key1, SignatureScheme.SHA256withECDSA)
+to_acct = Account(private_key3, SignatureScheme.SHA256withECDSA)
+b58_to_address = to_acct.get_address_base58()
+gas_limit = 20000000
+gas_price = 500
+value = 1
+tx_hash = oep4.transfer_from(spender_acct, from_acct, b58_to_address, value, from_acct, gas_limit, gas_price)
+```
+
+#### Parameters
+
+| Parameter      | Type    | Description                                                               |
+| :------------: | :-----: | :-----------------------------------------------------------------------: |
+| spender_acct   | Account | an Account class that spend the oep4 token.                               |
+| from_acct      | Account | an Account class that actually pay oep4 token for the spender's spending. |
+| b58_to_address | str     | a base58 encode address that receive the oep4 token.                      |
+| value          | int     | the amount of ope4 token in this transaction.                             |
+| payer_acct     | Account | an Account class that used to pay for the transaction.                    |
+| gas_limit      | int     | an int value that indicate the gas limit.                                 |
+| gas_price      | int     | an int value that indicate the gas price.                                 |
+
+#### Return Value
+
+| Type  | Description                            |
+| :---: | :------------------------------------: |
+| str   | the hexadecimal transaction hash value |
