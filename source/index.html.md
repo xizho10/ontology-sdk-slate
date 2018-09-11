@@ -406,7 +406,7 @@ Initiates deployment of smart contract. The <code>code</code> parameter represen
 ## Architecture
 The interaction between dApp and Ontology network can be described with this diagram:
 
-[[Image:https://github.com/backslash47/OEPs/blob/oep-dapp-api/OEP-6/OEP-6-1.svg|Architecture]]
+[Architecture](https://github.com/backslash47/OEPs/blob/oep-dapp-api/OEP-6/OEP-6-1.svg)
 
 ## External components
 Yellow colored components are external to this proposal.
@@ -418,7 +418,7 @@ Green colored components represent ```dAPI.js```. It is universal implementation
 Blue colored components belong to specific implementation of dAPI provider. The implementation is out of scope of this proposal, but the implementator must adhere to the protocol used by dAPI.js.
 
 ## Communication protocol
-The communication protocol has RPC style of communication. The RPC is modeled on top of standard WebExtension message passing using <code>runtime.sendMessage</code> and <code>runtime.onMessage.addListener</code>. All the complications of WebExtension is hidden for both the '''dApp''' and '''dAPI provider''' when using dAPI.js.
+The communication protocol has RPC style of communication. The RPC is modeled on top of standard WebExtension message passing using <code>runtime.sendMessage</code> and <code>runtime.onMessage.addListener</code>. All the complications of WebExtension is hidden for both the ```dApp```' and ```dAPI provider``` when using dAPI.js.
 
 dAPI providers might use dAPI.js as the communication protocol, but they can also implement different protocols suitable for the specific environment (e.g: iOS, Android, Desktop).
 
