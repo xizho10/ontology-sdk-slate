@@ -5,7 +5,7 @@ language_tabs: # must be one of
   - python
 
 toc_footers:
-  - <a href='https://github.com/ontio/ontology-python-sdk/tree/master/test'>Check for more examples</a>
+  - <a href='https://github.com/ontio/ontology-dapi'>Check for more examples</a>
   - <a href='https://ont.io'>Powered by Ontology</a>
 
 includes:
@@ -14,980 +14,424 @@ includes:
 search: false
 ---
 
-# Introduction
+# Abstract
 
-This is a comprehensive Java library for the Ontology blockchain,which is released by Ontology currently supports multiple functions, including native wallet management, digital identity management, digital asset management, smart contract deployment and invocation, node communication, with more to come in the future.
+This proposal has two major parts:
 
-The Ontology official Python SDK is a comprehensive SDK which is based on Python3.x. Currently, it supports local wallet management, digital identity management, digital asset management, deployment and envoke for smart contract, and communication with the Ontology blockchain. The future will also support more functions and applications.
+* A Javascript API is proposed for dApps development. This dAPI allows dApps to communicate with Ontology blockchain and make requests for transfers, ONT ID registration and others, without requiring users to trust the dApp itself. The issue of trust is shifted to the dAPI provider.
 
-# Network
+* A Communication protocol is proposed for dAPI provider development. This allows multiple Wallet implementators to offer the same unified service to users of dApps and prevent fragmentation of dApp development.
 
-## network.get_version
+# Motivation
 
-```python
+Currently a dApp will use one of the SDKs (Typescript, Java, Python, ...) to communicate with Ontology network. This setup has three main disadvantages:
 
-from ontology.ont_sdk import OntologySdk
+1. User of the dApp will have to trust the dApp developer with his private keys and that information about transfers mediated through the dApp are legitimate.
 
-rpc_address = 'http://polaris3.ont.io:20336'
-sdk = OntologySdk()
-sdk.rpc.set_address(rpc_address)
-version = sdk.rpc.get_version()
+2. Although the SDKs are very powerful, they are hard to use. A more streamlined API will allow developers to focus on the application itself.
+
+3. Hard to implement integration to external signing mechanism (e.g.: Ledger, Trezor)
+
+# Specification
+
+This proposal makes use of the following functions and definitions:
+
+*'''SDK''', a software development kit implementing low level communication with the network and providing high level interface for dApps.
+
+*'''dApp''', an application with decentralised characteristics running in web environment. The application uses Ontology network for value transfers, contracts enforcing and identification between participants.
+
+*'''dAPI''', the API for dApps this OEP is proposing.
+
+*'''dAPI provider''', an implementation of the dAPI in the form of web browser plugin or other means, where a user interaction with the provider can be injected into api call workflow (e.g.: confirming transfer).
+
+*'''Notify event''', an event broadcasted from smart contract execution.
+
+*'''NEOVM''', a lightweight virtual machine for execution of Neo/Ontology smart contracts.
+
+## Asynchronicity and error handling
+
+All the functions except '''Utils''' component are communicating with extension through asynchronious message channel. Therefore all the methods are returning Promises. 
+
+The promises will be either resolved immediately if no interaction with user UI or blockchain is required or later when the user action takes place/blockchain responds. In case the call to method trigger an error, the error code is transmitted in rejected promise. Specific error codes are described with every method.
+
+## Account/Identity management
+
+Because dAPI shifts the issue of trust from dApp to dApp provider, all account and identity management is external to the dApp. Therefore there are no methods which directly handle private keys. The dApp won't need to sign the transaction itself. 
+
+Any time dApp makes a call that requires a private key to sign something (makeTransfer, sign), dApp provider will inform user about the action and prompt him for permission.
+
+dApp provider can even forward the request to external signing mechanism as part of the process. This way the dApp does not need to specifically integrate with such mechanism.
+
+dAPI providers can choose to support multiple accounts and identities. Account and identity switching is part of dAPI provider implementation. dAPI provider should share with dApp as little information about user accounts and identities as possible, because it posses a security risk. Otherwise malicious dApp can list all user accounts with balances and identities.
+
+### dAPI access restriction
+
+Using dAPI any dApp is able to call the dAPI provider and initiate an interaction with the user (e.g.: <code>makeTransfer</code>). Only prerequisite is, that the user visits the dApp page. Although the user will need to confirm such an action, bothering him with this action, if he has no intention to confirm it, will hinder the experience.
+
+Therefore the dAPI will forward with every request the <code>Caller</code> object containing the <code>url</code> of the dApp page or <code>id</code> of another extension trying to communicate with dAPI provider. It is upto the dAPI provider to implement custom permission granting workflow or automatic blacklisting.
+
+```typescript
+
+interface Caller {
+  url?: string;
+  id?: string;
+}
 ```
+## Encoding
 
-This interface is used to get the version information of the connected node in current network.
+The interaction with dAPI often requires specification of '''Address''', '''Identity''', '''Contract address''' or '''Public Key'''. Those concepts are represented by string representation with specific encodings.
 
-### Parameters
+### Address
 
-| Parameter | Type  | Description |
-| :-------: | :---: | :---------: |
-|           |       |             |
+* 34 bytes long
+* using Base58 check encoding
+* starts with A letter
 
-### Return Value
+### Contract address
 
-| Type  | Description                                   |
-| :---: | :-------------------------------------------: |
-| str   | the version information of the connected node |
+* 40 bytes long
+* using Hex encoding
 
-## network.get_node_count
+### Identity
 
-```python
+* 42 bytes long
+* using Base58 check encoding for 34 byte suffix
+* starts with 'did:ont:' prefix
 
-from ontology.ont_sdk import OntologySdk
+### Public Key
 
-rpc_address = 'http://polaris3.ont.io:20336'
-sdk = OntologySdk()
-sdk.rpc.set_address(rpc_address)
-count = sdk.rpc.get_node_count()
-```
+* 33/35 bytes long
+* using Hex encoding
 
-This interface is used to get the current number of connections for the node in current network.
 
-### Parameters
+## Complex structures
 
-| Parameter | Type  | Description |
-| :-------: | :---: | :---------: |
-|           |       |             |
+All the functions of this dAPI, which requires arguments are using one typed argument instead of many. The reasons are better readability and future extensibility. 
 
-### Return Value
+API specification is a complex document. Every method has some inputs and outputs. Although we use the primitive types (numbers, strings, booleans) whenever possible, there are places where a complex object is required. To precisely describe the structure of those objects, we'd chosen Typescript-like syntax.
 
-| Type  | Description               |
-| :---: | :-----------------------: |
-| int   | the number of connections |
+## Components
 
-## network.get_gas_price
+Although this proposal is bringing clear and simple API for the dApps, the individual functions can be divided into these components:
 
-```python
+* '''Network''', a thin wrapper around the Ontology Node API, masking the complexity of rpc/rest calls and web-sockets with Request-Response facade.
 
-from ontology.ont_sdk import OntologySdk
+* '''Provider''', functions for getting information about dAPI provider
 
-rpc_address = 'http://polaris3.ont.io:20336'
-sdk = OntologySdk()
-sdk.rpc.set_address(rpc_address)
-price = sdk.rpc.get_gas_price()
-```
+* '''Asset''', functions for transferring assets between user account and others.
 
-This interface is used to get the gas price in current network.
+* '''Identity''', functions for interacting with own ONT-ID identity.
 
-### Parameters
+* '''SmartContract''', a high level wrapper around the Smart Contract invocation and deployment.
 
-| Parameter | Type  | Description |
-| :-------: | :---: | :---------: |
-|           |       |             |
+* '''Message''', functions for signing arbitrary messages.
 
-### Return Value
+* '''Utils''', a group of utility function for encoding and decoding the data from/to blockchain.
 
-| Type  | Description            |
-| :---: | :--------------------: |
-| int   | the value of gas price |
+## Network
 
-## network.get_network_id
+A network API consists of:
 
-```python
+```typescript
 
-from ontology.ont_sdk import OntologySdk
+type NetworkType = 'MAIN' | 'TEST' | 'PRIVATE';
+type Asset = 'ONT' | 'ONG';
 
-rpc_address = 'http://polaris3.ont.io:20336'
-sdk = OntologySdk()
-sdk.rpc.set_address(rpc_address)
-network_id = sdk.rpc.get_network_id()
-```
+interface Network {
+  type: NetworkType;
+  address: string;
+}
 
-This interface is used to get the network id of current network.
-
-### Parameters
-
-| Parameter | Type  | Description |
-| :-------: | :---: | :---------: |
-|           |       |             |
-
-### Return Value
-
-| Type  | Description                       |
-| :---: | :-------------------------------: |
-| int   | the network id of current network |
-
-## network.get_block_by_hash
-
-```python
-from ontology.ont_sdk import OntologySdk
-
-rpc_address = 'http://polaris3.ont.io:20336'
-sdk = OntologySdk()
-sdk.rpc.set_address(rpc_address)
-block_hash = "44425ae42a394ec0c5f3e41d757ffafa790b53f7301147a291ab9b60a956394c"
-block = sdk.rpc.get_block_by_hash(block_hash)
-```
-
-This interface is used to get the block information by hexadecimal block hash value in current network.
-
-### Parameters
-
-| Parameter  | Type  | Description                       |
-| :--------: | :---: | :-------------------------------: |
-| block_hash | str   | a hexadecimal value of block hash |
-
-### Return Value
-
-| Type  | Description                                       |
-| :---: | :-----------------------------------------------: |
-| dict  | the block information of the specified block hash |
-
-## network.get_block_by_height
-
-```python
-from ontology.ont_sdk import OntologySdk
-
-rpc_address = 'http://polaris3.ont.io:20336'
-sdk = OntologySdk()
-sdk.rpc.set_address(rpc_address)
-height = 0
-block = sdk.rpc.get_block_by_height(height)
-```
-
-This interface is used to get the block information by block height in current network.
-
-### Parameters
-
-| Parameter | Type  | Description                  |
-| :-------: | :---: | :--------------------------: |
-| height    | int   | a decimal block height value |
-
-### Return Value
-
-| Type  | Description                                         |
-| :---: | :-------------------------------------------------: |
-| dict  | the block information of the specified block height |
-
-## network.get_block_count
-
-```python
-
-from ontology.ont_sdk import OntologySdk
-
-rpc_address = 'http://polaris3.ont.io:20336'
-sdk = OntologySdk()
-sdk.rpc.set_address(rpc_address)
-count = sdk.rpc.get_block_count()
-```
-
-This interface is used to get the decimal block number in current network.
-
-### Parameters
-
-| Parameter | Type  | Description |
-| :-------: | :---: | :---------: |
-|           |       |             |
-
-### Return Value
-
-| Type  | Description                                           |
-| :---: | :---------------------------------------------------: |
-| int   | the decimal total number of blocks in current network |
-
-## network.get_current_block_hash
-
-```python
-
-from ontology.ont_sdk import OntologySdk
-
-rpc_address = 'http://polaris3.ont.io:20336'
-sdk = OntologySdk()
-sdk.rpc.set_address(rpc_address)
-current_block_hash = sdk.rpc.get_current_block_hash()
-```
-
-This interface is used to get the hexadecimal hash value of the highest block in current network.
-
-### Parameters
-
-| Parameter | Type  | Description |
-| :-------: | :---: | :---------: |
-|           |       |             |
-
-### Return Value
-
-| Type  | Description                                                        |
-| :---: | :----------------------------------------------------------------: |
-| dict  | the hexadecimal hash value of the highest block in current network |
-
-## network.get_block_hash_by_height
-
-```python
-
-from ontology.ont_sdk import OntologySdk
-
-rpc_address = 'http://polaris3.ont.io:20336'
-sdk = OntologySdk()
-sdk.rpc.set_address(rpc_address)
-height = 0
-block_hash = sdk.rpc.get_block_hash_by_height(height)
-```
-
-This interface is used to get the hexadecimal hash value of specified block height in current network.
-
-### Parameters
-
-| Parameter | Type  | Description                  |
-| :-------: | :---: | :--------------------------: |
-| height    | int   | a decimal block height value |
-
-### Return Value
-
-| Type  | Description                                              |
-| :---: | :------------------------------------------------------: |
-| str   | the hexadecimal hash value of the specified block height |
-
-## network.get_balance()
-
-```python
-
-from ontology.ont_sdk import OntologySdk
-
-rpc_address = 'http://polaris3.ont.io:20336'
-sdk = OntologySdk()
-sdk.rpc.set_address(rpc_address)
-base58_address = "ANH5bHrrt111XwNEnuPZj6u95Dd6u7G4D6"
-address_balance = sdk.rpc.get_balance(base58_address)
-ont_balance = address_balance['ont']
-ong_balance = address_balance['ong']
-```
-
-This interface is used to get the account balance of specified base58 encoded address in current network.
-
-### Parameters
-
-| Parameter      | Type  | Description                      |
-| :------------: | :---: | :------------------------------: |
-| base58_address | str   | a base58 encoded account address |
-
-### Return Value
-
-| Type  | Description                                     |
-| :---: | :---------------------------------------------: |
-| dict  | the value of account balance in dictionary form |
-
-## network.get_allowance
-
-```python
-from ontology.ont_sdk import OntologySdk
-
-rpc_address = 'http://polaris3.ont.io:20336'
-sdk = OntologySdk()
-sdk.rpc.set_address(rpc_address)
-base58_address = "AKDFapcoUhewN9Kaj6XhHusurfHzUiZqUA"
-allowance = sdk.rpc.get_allowance(base58_address)
-```
-
-This interface is used to get the the allowance from transfer-from accout to transfer-to account in current network.
-
-### Parameters
-
-| Parameter      | Type  | Description                      |
-| :------------: | :---: | :------------------------------: |
-| base58_address | str   | a base58 encoded account address |
-
-### Return Value
-
-| Type  | Description                                                             |
-| :---: | :---------------------------------------------------------------------: |
-| str   | the decimal allowance from transfer-from account to transfer-to account |
-
-## network.get_storage
-
-```python
-
-from ontology.ont_sdk import OntologySdk
-
-rpc_address = 'http://polaris3.ont.io:20336'
-sdk = OntologySdk()
-sdk.rpc.set_address(rpc_address)
-contract_address = "0100000000000000000000000000000000000000"
-key = "746f74616c537570706c79"
-value = sdk.rpc.get_storage(contract_address, key)
-```
-
-This interface is used to get the corresponding stored value based on hexadecimal contract address and stored key.
-
-### Parameters
-
-| Parameter        | Type  | Description                  |
-| :--------------: | :---: | :--------------------------: |
-| contract_address | str   | hexadecimal contract address |
-| key              | str   | hexadecimal stored key       |
-
-### Return Value
-
-| Type  | Description                                                       |
-| :---: | :---------------------------------------------------------------: |
-| int   | the stored value according to the contract address and stored key |
-
-## network.get_smart_contract_event_by_tx_hash
-
-```python
-
-from ontology.ont_sdk import OntologySdk
-
-rpc_address = 'http://polaris3.ont.io:20336'
-sdk = OntologySdk()
-sdk.rpc.set_address(rpc_address)
-tx_hash = "65d3b2d3237743f21795e344563190ccbe50e9930520b8525142b075433fdd74"
-event = sdk.rpc.get_smart_contract_event_by_tx_hash(tx_hash)
-```
-
-This interface is used to get the corresponding smart contract event based on the hexadecimal transaction hash value.
-
-### Parameters
-
-| Parameter | Type  | Description                        |
-| :-------: | :---: | :--------------------------------: |
-| tx_hash   | str   | hexadecimal transaction hash value |
-
-### Return Value
-
-| Type  | Description                                                |
-| :---: | :--------------------------------------------------------: |
-| dict  | the information of smart contract event in dictionary form |
-
-## network.get_smart_contract_event_by_height
-
-```python
-
-from ontology.ont_sdk import OntologySdk
-
-rpc_address = 'http://polaris3.ont.io:20336'
-sdk = OntologySdk()
-sdk.rpc.set_address(rpc_address)
-height = 0
-event = sdk.rpc.get_smart_contract_event_by_height(height)
-```
-
-This interface is used to get the corresponding smart contract event based on the height of block.
-
-### Parameters
-
-| Parameter | Type  | Description            |
-| :-------: | :---: | :--------------------: |
-| height    | int   | a decimal height value |
-
-### Return Value
-
-| Type  | Description                                                |
-| :---: | :--------------------------------------------------------: |
-| dict  | the information of smart contract event in dictionary form |
-
-## network.get_raw_transaction
-
-```python
-
-from ontology.ont_sdk import OntologySdk
-
-rpc_address = 'http://polaris3.ont.io:20336'
-sdk = OntologySdk()
-sdk.rpc.set_address(rpc_address)
-tx_hash = "65d3b2d3237743f21795e344563190ccbe50e9930520b8525142b075433fdd74"
-tx = sdk.rpc.get_raw_transaction(tx_hash)
-```
-
-This interface is used to get the corresponding transaction information based on the specified hash value.
-
-### Parameters
-
-| Parameter | Type  | Description                        |
-| :-------: | :---: | :--------------------------------: |
-| tx_hash   | str   | hexadecimal transaction hash value |
-
-### Return Value
-
-| Type  | Description                                       |
-| :---: | :-----------------------------------------------: |
-| dict  | the information of transaction in dictionary form |
-
-## network.get_smart_contract
-
-```python
-
-from ontology.ont_sdk import OntologySdk
-
-rpc_address = 'http://polaris3.ont.io:20336'
-sdk = OntologySdk()
-sdk.rpc.set_address(rpc_address)
-contract_address = "0239dcf9b4a46f15c5f23f20d52fac916a0bac0d"
-contract = sdk.rpc.get_smart_contract(contract_address)
-```
-
-This interface is used to get the information of smart contract based on the specified hexadecimal hash value.
-
-### Parameters
-
-| Parameter        | Type  | Description            |
-| :--------------: | :---: | :--------------------: |
-| contract_address | str   | hexadecimal hash value |
-
-### Return Value
-
-| Type  | Description                                          |
-| :---: | :--------------------------------------------------: |
-| dict  | the information of smart contract in dictionary form |
-
-## network.get_merkle_proof
-
-```python
-
-from ontology.ont_sdk import OntologySdk
-
-rpc_address = 'http://polaris3.ont.io:20336'
-sdk = OntologySdk()
-sdk.rpc.set_address(rpc_address)
-tx_hash = "65d3b2d3237743f21795e344563190ccbe50e9930520b8525142b075433fdd74"
-proof = sdk.rpc.get_merkle_proof(tx_hash)
-```
-
-This interface is used to get the corresponding merkle proof based on the specified hexadecimal hash value.
-
-### Parameters
-
-| Parameter | Type  | Description                        |
-| :-------: | :---: | :--------------------------------: |
-| tx_hash   | str   | hexadecimal transaction hash value |
-
-
-### Return Value
-
-| Type  | Description                         |
-| :---: | :---------------------------------: |
-| dict  | the merkle proof in dictionary form |
-
-## network.send_raw_transaction
-
-```python
-
-from ontology.ont_sdk import OntologySdk
-
-rpc_address = 'http://polaris3.ont.io:20336'
-sdk = OntologySdk()
-sdk.rpc.set_address(rpc_address)
-pri_key_1 = '75de8489fcb2dcaf2ef3cd607feffde18789de7da129b5e97c81e001793cb7cf'
-acct = Account(pri_key_1)
-length = 64
-pri_key_2 = get_random_str(length)
-acct2 = Account(pri_key_2)
-b58_address_1 = acct.get_address_base58()
-b58_address_2 = acct2.get_address_base58()
-tx = Asset.new_transfer_transaction("ont", b58_address_1, b58_address_2, 2, b58_address_1, 20000, 500)
-tx = sdk.sign_transaction(tx, acct)
-tx_hash = sdk.rpc.send_raw_transaction(tx)
-```
-
-This interface is used to send the transaction into the network.
-
-### Parameters
-
-| Parameter | Type        | Description                                 |
-| :-------: | :---------: | :-----------------------------------------: |
-| tx        | Transaction | a Transaction object in ontology Python SDK |
-
-### Return Value
-
-| Parameter | Type  | Description                        |
-| :-------: | :---: | :--------------------------------: |
-| tx_hash   | str   | hexadecimal transaction hash value |
-
-## network.send_raw_transaction_pre_exec
-
-```python
-
-from ontology.ont_sdk import OntologySdk
-
-rpc_address = 'http://polaris3.ont.io:20336'
-sdk = OntologySdk()
-sdk.rpc.set_address(rpc_address)
-pri_key_1 = '75de8489fcb2dcaf2ef3cd607feffde18789de7da129b5e97c81e001793cb7cf'
-acct = Account(pri_key_1)
-pri_key2 = get_random_str(64)
-acct2 = Account(pri_key2)
-b58_address_1 = acct.get_address_base58()
-b58_address_2 = acct2.get_address_base58()
-tx = Asset.new_transfer_transaction("ont", b58_address_1, b58_address_2, 2, b58_address_1, 20000, 500)
-tx = sdk.sign_transaction(tx, acct)
-result = sdk.rpc.send_raw_transaction_pre_exec(tx)
-```
-
-This interface is used to send the transaction that is prepare to execute.
-
-### Parameters
-
-| Parameter | Type        | Description                                 |
-| :-------: | :---------: | :-----------------------------------------: |
-| tx        | Transaction | a Transaction object in ontology Python SDK |
-
-### Return Value
-
-| Type  | Description                                                    |
-| :---: | :------------------------------------------------------------: |
-| str   | the execution result of transaction that is prepare to execute |
-
-# Wallet
-
-## import_account
-
-```python
-wm = WalletManager()
-path = os.path.join(os.getcwd(), 'test.json')
-wm.open_wallet(path)
-label = 'label'
-encrypted_pri_key = 'Yl1e9ugbVADd8a2SbAQ56UfUvr3e9hD2eNXAM9xNjhnefB+YuNXDFvUrIRaYth+L'
-password = '1'
-b58_address = 'AazEvfQPcQ2GEFFPLF1ZLwQ7K5jDn81hve'
-b64_salt = 'pwLIUKAf2bAbTseH/WYrfQ=='
-wm.import_account(label, encrypted_pri_key, password, b58_address, b64_salt)
-```
-
-This interface is used to import account by providing account data.
-
-### Parameters
-
-| Parameter              | Type  | Description                                                               |
-| :--------------------: | :---: | :-----------------------------------------------------------------------: |
-| label                  | str   | wallet label                                                              |
-| encrypted_pri_key: str | str   | an encrypted private key in base64 encoding from                          |
-| pwd                    | str   | a password which is used to encrypt and decrypt the private key           |
-| base58_address         | str   | a base58 encode  wallet address value                                     |
-| base64_salt            | str   | a base64 encode salt value which is used in the encryption of private key |
-
-### Return Value
-
-| Type        | Description                                                                            |
-| :---------: | :------------------------------------------------------------------------------------: |
-| AccountData | if succeed, return an data structure which contain the information of a wallet account |
-| None        | if failed, return a None object                                                        |
-
-## create_account
-
-```python
-wm = WalletManager()
-label = 'label'
-password = 'password'
-wm.create_account(label, password)
-accounts = wm.get_wallet().get_accounts()
-```
-
-This interface is used to create account by seeting password and label.
-
-### Parameters
-
-| Parameter              | Type  | Description                                                               |
-| :--------------------: | :---: | :-----------------------------------------------------------------------: |
-| label                  | str   | wallet label                                                              |
-| encrypted_pri_key: str | str   | an encrypted private key in base64 encoding from                          |
-| pwd                    | str   | a password which is used to encrypt and decrypt the private key           |
-| base58_address         | str   | a base58 encode  wallet address value                                     |
-| base64_salt            | str   | a base64 encode salt value which is used in the encryption of private key |
-
-### Return Value
-
-| Type        | Description                                                                            |
-| :---------: | :------------------------------------------------------------------------------------: |
-| AccountData | if succeed, return an data structure which contain the information of a wallet account |
-| None        | if failed, return a None object                                                        |
-
-## create_account_from_private_key
-
-```python
-wm = WalletManager()
-private_key = util.get_random_str(64)
-label = 'hello_account'
-password = 'password'
-account = wm.create_account_from_private_key(label, password, private_key)
-account_address = account.get_address()
-```
-
-This interface is used to create account by providing an encrypted private key and it's decrypt password.
-
-# Message
-
-# Smart Contract
-
-## OEP4
-
-### OEP4.get_name
-
-```python
-from ontology.ont_sdk import OntologySdk
-sdk = OntologySdk()
-remote_rpc_address = "http://polaris3.ont.io:20336"
-sdk.set_rpc(remote_rpc_address)
-contract_address = '6fe70af535887a820a13cfbaff6b0b505f855e5c'
-oep4 = sdk.neo_vm().oep4()
-oep4.set_contract_address(contract_address)
-oep4.get_name()
-```
-
-This interface is used to call the `Name` method in ope4 that return the name of an oep4 token.
-
-#### Parameters
-
-| Parameter | Type  | Description |
-| :-------: | :---: | :---------: |
-|           |       |             |
-
-#### Return Value
-
-| Type  | Description                        |
-| :---: | :--------------------------------: |
-| str   | the string name of the oep4 token. |
-
-### OEP4.get_symbol
-
-```python
-from ontology.ont_sdk import OntologySdk
-sdk = OntologySdk()
-remote_rpc_address = "http://polaris3.ont.io:20336"
-sdk.set_rpc(remote_rpc_address)
-contract_address = '6fe70af535887a820a13cfbaff6b0b505f855e5c'
-oep4 = sdk.neo_vm().oep4()
-oep4.set_contract_address(contract_address)
-oep4.get_symbol()
-```
-
-This interface is used to call the `Symbol` method in ope4 that return the symbol of an oep4 token.
-
-#### Parameters
-
-| Parameter | Type  | Description |
-| :-------: | :---: | :---------: |
-|           |       |             |
-
-#### Return Value
-
-| Type  | Description                             |
-| :---: | :-------------------------------------: |
-| str   | a short string symbol of the oep4 token |
-
-### OEP4.get_decimal
-
-```python
-from ontology.ont_sdk import OntologySdk
-sdk = OntologySdk()
-remote_rpc_address = "http://polaris3.ont.io:20336"
-sdk.set_rpc(remote_rpc_address)
-contract_address = '6fe70af535887a820a13cfbaff6b0b505f855e5c'
-oep4 = sdk.neo_vm().oep4()
-oep4.set_contract_address(contract_address)
-oep4.get_decimal()
-```
-
-This interface is used to call the `Decimal` method in ope4 that return the number of decimals used by the oep4 token.
-
-#### Parameters
-
-| Parameter | Type  | Description |
-| :-------: | :---: | :---------: |
-|           |       |             |
-
-#### Return Value
-
-| Type  | Description                                    |
-| :---: | :--------------------------------------------: |
-| int   | the number of decimals used by the oep4 token. |
-
-### OEP4.init()
-
-```python
-from ontology.ont_sdk import OntologySdk
-sdk = OntologySdk()
-remote_rpc_address = "http://polaris3.ont.io:20336"
-sdk.set_rpc(remote_rpc_address)
-contract_address = '6fe70af535887a820a13cfbaff6b0b505f855e5c'
-oep4 = sdk.neo_vm().oep4()
-oep4.set_contract_address(contract_address)
-private_key = '523c5fcf74823831756f0bcb3634234f10b3beb1c05595058534577752ad2d9f'
-acct = Account(private_key, SignatureScheme.SHA256withECDSA)
-gas_limit = 20000000
-gas_price = 500
-tx_hash = oep4.init(acct, acct, gas_limit, gas_price)
-```
-
-#### Parameters
-
-| Parameter | Type  | Description |
-| :-------: | :---: | :---------: |
-|           |       |             |
-
-#### Return Value
-
-| Type  | Description |
-| :---: | :---------: |
-|       |             |
-
-### OEP4.get_total_supply()
-
-```python
-from ontology.ont_sdk import OntologySdk
-sdk = OntologySdk()
-remote_rpc_address = "http://polaris3.ont.io:20336"
-sdk.set_rpc(remote_rpc_address)
-contract_address = '6fe70af535887a820a13cfbaff6b0b505f855e5c'
-oep4 = sdk.neo_vm().oep4()
-oep4.set_contract_address(contract_address)
-oep4.get_total_supply()
-```
-
-This interface is used to call the TotalSupply method in ope4 that return the total supply of the oep4 token.
-
-#### Parameters
-
-| Parameter | Type  | Description |
-| :-------: | :---: | :---------: |
-|           |       |             |
-
-#### Return Value
-
-| Type  | Description                        |
-| :---: | :--------------------------------: |
-| int   | the total supply of the oep4 token |
-
-### OEP4.balance_of()
-
-```python
-from ontology.ont_sdk import OntologySdk
-sdk = OntologySdk()
-remote_rpc_address = "http://polaris3.ont.io:20336"
-sdk.set_rpc(remote_rpc_address)
-contract_address = '6fe70af535887a820a13cfbaff6b0b505f855e5c'
-oep4 = sdk.neo_vm().oep4()
-oep4.set_contract_address(contract_address)
-private_key = "523c5fcf74823831756f0bcb3634234f10b3beb1c05595058534577752ad2d9f"
-acct = Account(private_key, SignatureScheme.SHA256withECDSA)
-b58_address = acct.get_address_base58()
-balance = oep4.balance_of(b58_address)
-```
-
-This interface is used to call the BalanceOf method in ope4 that query the ope4 token balance of the given base58 encode address.
-
-#### Parameters
-
-| Parameter   | Type  | Description               |
-| :---------: | :---: | :-----------------------: |
-| b58_address | str   | the base58 encode address |
-
-#### Return Value
-
-| Type  | Description                                         |
-| :---: | :-------------------------------------------------: |
-| int   | the oep4 token balance of the base58 encode address |
-
-### OEP4.transfer()
-
-```python
-from ontology.ont_sdk import OntologySdk
-sdk = OntologySdk()
-remote_rpc_address = "http://polaris3.ont.io:20336"
-sdk.set_rpc(remote_rpc_address)
-contract_address = '6fe70af535887a820a13cfbaff6b0b505f855e5c'
-oep4 = sdk.neo_vm().oep4()
-oep4.set_contract_address(contract_address)
+function getGenerateBlockTime(): Promise<number | null>
+function getNodeCount(): Promise<number>
+function getBlockHeight(): Promise<number>
+function getMerkleProof({ txHash: string }): Promise<MerkleProof>
+function getStorage({ contract: string, key: string }): Promise<string>
+function getAllowance({ asset: Asset, fromAddress: string, toAddress: string }): Promise<number>
+function getBlock({ block: number | string }): Promise<Block>
+function getTransaction({ txHash: string }): Promise<Transaction>
+function getNetwork(): Network
+function getBalance({ address: string }): Promise<Balance>
 
 ```
 
-This interface is used to call the Transfer method in ope4 that transfer an amount of tokens from one account to another account.
+For further explanation about the wrapped method consult https://ontio.github.io/documentation/restful_api_en.html . The types '''Transaction''', '''Block''', '''MerkleProof''' and '''Balance''' corresponds to the exact object returned from Ontology blockchain.
 
-#### Parameters
+TODO: copy the definition of all network api calls with inputs and outputs from ontology documentation.
 
-| Parameter      | Type    | Description                                                                                |
-| :------------: | :-----: | :----------------------------------------------------------------------------------------: |
-| from_acct      | Account | an Account class that send the oep4 token                                                  |
-| b58_to_address | str     | a base58 encode address that receive the oep4 token                                        |
-| value          | int     | an int value that indicate the amount oep4 token that will be transfer in this transaction |
-| payer_acct     | Account | an Account class that used to pay for the transaction                                      |
-| gas_limit      | int     | an int value that indicate the gas limit                                                   |
-| gas_price      | int     | an int value that indicate the gas price                                                   |
 
-#### Return Value
+## Provider
 
-| Type  | Description                            |
-| :---: | :------------------------------------: |
-| str   | the hexadecimal transaction hash value |
+A primary focus of Provider API is to check if user has installed any dAPI provider and to get information about it.
 
-### OEP4.transfer_multi()
+### getProvider
 
-```python
-from ontology.ont_sdk import OntologySdk
-sdk = OntologySdk()
-remote_rpc_address = "http://polaris3.ont.io:20336"
-sdk.set_rpc(remote_rpc_address)
-contract_address = '6fe70af535887a820a13cfbaff6b0b505f855e5c'
-oep4 = sdk.neo_vm().oep4()
-oep4.set_contract_address(contract_address)
-private_key1 = "523c5fcf74823831756f0bcb3634234f10b3beb1c05595058534577752ad2d9f"
-private_key2 = "75de8489fcb2dcaf2ef3cd607feffde18789de7da129b5e97c81e001793cb7cf"
-private_key3 = "1383ed1fe570b6673351f1a30a66b21204918ef8f673e864769fa2a653401114"
-acct1 = Account(private_key1, SignatureScheme.SHA256withECDSA)
-acct2 = Account(private_key2, SignatureScheme.SHA256withECDSA)
-acct3 = Account(private_key3, SignatureScheme.SHA256withECDSA)
-args = list()
 
-b58_from_address1 = acct1.get_address_base58()
-b58_from_address2 = acct2.get_address_base58()
+```typescript
 
-b58_to_address1 = acct2.get_address_base58()
-b58_to_address2 = acct3.get_address_base58()
+interface Provider {
+  name: string;
+  version: string;
+  compatibility: string[];
+}
 
-value_list = [1, 2]
-
-transfer1 = [b58_from_address1, b58_to_address1, value_list[0]]
-transfer2 = [b58_from_address2, b58_to_address2, value_list[1]]
-signers = [acct1, acct2, acct3]
-args.append(transfer1)
-args.append(transfer2)
-
-gas_limit = 20000000
-gas_price = 500
-
-tx_hash = oep4.transfer_multi(args, signers[0], signers, gas_limit, gas_price)
-```
-
-#### Parameters
-
-| Parameter  | Type    | Description                                                                                                                                                                  |
-| :--------: | :-----: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| args       | list    | a parameter list with each item contains three sub-items:base58 encode transaction sender address,base58 encode transaction receiver address, amount of token in transaction |
-| payer_acct | Account | an Account class that used to pay for the transaction                                                                                                                        |
-| signers    | list    | a signer list used to sign this transaction which should contained all sender in args                                                                                        |
-| gas_limit  | int     | an int value that indicate the gas limit                                                                                                                                     |
-| gas_price  | int     | an int value that indicate the gas price                                                                                                                                     |
-
-#### Return Value
-
-| Type  | Description                            |
-| :---: | :------------------------------------: |
-| str   | the hexadecimal transaction hash value |
-
-### OEP4.approve()
-
-```python
-from ontology.ont_sdk import OntologySdk
-sdk = OntologySdk()
-remote_rpc_address = "http://polaris3.ont.io:20336"
-sdk.set_rpc(remote_rpc_address)
-contract_address = '6fe70af535887a820a13cfbaff6b0b505f855e5c'
-oep4 = sdk.neo_vm().oep4()
-oep4.set_contract_address(contract_address)
-private_key1 = "523c5fcf74823831756f0bcb3634234f10b3beb1c05595058534577752ad2d9f"
-private_key2 = "75de8489fcb2dcaf2ef3cd607feffde18789de7da129b5e97c81e001793cb7cf"
-owner_acct = Account(private_key1, SignatureScheme.SHA256withECDSA)
-spender = Account(private_key2, SignatureScheme.SHA256withECDSA)
-payer_acct = owner_acct
-b58_spender_address = spender.get_address_base58()
-amount = 100
-gas_limit = 20000000
-gas_price = 500
-tx_hash = oep4.approve(owner_acct, b58_spender_address, amount, payer_acct, gas_limit, gas_price)
-```
-
-This interface is used to call the Approve method in ope4 that allows spender to withdraw a certain amount of oep4 token from owner account multiple times.
-
-**Attention**: If this function is called again, it will overwrite the current allowance with new value.
-
-#### Parameters
-
-| Parameter           | Type    | Description                                                                                |
-| :-----------------: | :-----: | :----------------------------------------------------------------------------------------: |
-| owner_acct          | Account | an Account class that indicate the owner                                                   |
-| b58_spender_address | str     | a base58 encode address that be allowed to spend the oep4 token in owner's account         |
-| amount              | int     | an int value that indicate the amount oep4 token that will be transfer in this transaction |
-| payer_acct          | Account | an Account class that used to pay for the transaction                                      |
-| gas_limit           | int     | an int value that indicate the gas limit                                                   |
-| gas_price           | int     | an int value that indicate the gas price                                                   |
-
-#### Return Value
-
-| Type  | Description                            |
-| :---: | :------------------------------------: |
-| str   | the hexadecimal transaction hash value |
-
-### OEP4.allowance()
-
-```python
-from ontology.ont_sdk import OntologySdk
-sdk = OntologySdk()
-remote_rpc_address = "http://polaris3.ont.io:20336"
-sdk.set_rpc(remote_rpc_address)
-contract_address = '6fe70af535887a820a13cfbaff6b0b505f855e5c'
-oep4 = sdk.neo_vm().oep4()
-oep4.set_contract_address(contract_address)
+function getProvider(): Promise<Provider>
 
 ```
 
-#### Parameters
 
-| Parameter           | Type  | Description                                              |
-| :-----------------: | :---: | :------------------------------------------------------: |
-| b58_owner_address   | str   | a base58 encode address that represent owner's account   |
-| b58_spender_address | str   | a base58 encode address that represent spender's account |
+Returns the information about installed dAPI provider if there is one installed. <code>compatibility</code> refers to all OEPs this dAPI provider supports. E.g.:
 
-#### Return Value
+```typescript
 
-| Type  | Description                                                                          |
-| :---: | :----------------------------------------------------------------------------------: |
-| int   | the amount of oep4 token that owner allow spender to transfer from the owner account |
+compatability: [
+    'OEP-6',
+    'OEP-10',
+    'OEP-29'
+]
 
-### OEP4.transfer_from()
-
-```python
-from ontology.ont_sdk import OntologySdk
-sdk = OntologySdk()
-remote_rpc_address = "http://polaris3.ont.io:20336"
-sdk.set_rpc(remote_rpc_address)
-contract_address = '6fe70af535887a820a13cfbaff6b0b505f855e5c'
-oep4 = sdk.neo_vm().oep4()
-oep4.set_contract_address(contract_address)
-private_key1 = "523c5fcf74823831756f0bcb3634234f10b3beb1c05595058534577752ad2d9f"
-private_key2 = "75de8489fcb2dcaf2ef3cd607feffde18789de7da129b5e97c81e001793cb7cf"
-private_key3 = "1383ed1fe570b6673351f1a30a66b21204918ef8f673e864769fa2a653401114"
-spender_acct = Account(private_key2, SignatureScheme.SHA256withECDSA)
-from_acct = Account(private_key1, SignatureScheme.SHA256withECDSA)
-to_acct = Account(private_key3, SignatureScheme.SHA256withECDSA)
-b58_to_address = to_acct.get_address_base58()
-gas_limit = 20000000
-gas_price = 500
-value = 1
-tx_hash = oep4.transfer_from(spender_acct, from_acct, b58_to_address, value, from_acct, gas_limit, gas_price)
 ```
 
-#### Parameters
+dAPI provider does not need to support all future OEPs concerned with dAPI.
 
-| Parameter      | Type    | Description                                                               |
-| :------------: | :-----: | :-----------------------------------------------------------------------: |
-| spender_acct   | Account | an Account class that spend the oep4 token.                               |
-| from_acct      | Account | an Account class that actually pay oep4 token for the spender's spending. |
-| b58_to_address | str     | a base58 encode address that receive the oep4 token.                      |
-| value          | int     | the amount of ope4 token in this transaction.                             |
-| payer_acct     | Account | an Account class that used to pay for the transaction.                    |
-| gas_limit      | int     | an int value that indicate the gas limit.                                 |
-| gas_price      | int     | an int value that indicate the gas price.                                 |
+* Rejects with '''NO_PROVIDER''' in case there is no dAPI provider installed.
 
-#### Return Value
+## Asset
 
-| Type  | Description                            |
-| :---: | :------------------------------------: |
-| str   | the hexadecimal transaction hash value |
+A primary focus of Asset API is to initiate a transfer. The request needs to be confirmed by the user.
+
+### getAccount
+
+```typescript
+
+function getAccount(): Promise<string>	
+
+```
+Returns currently selected account of logged in user. 	
+ * Rejects with '''NO_ACCOUNT''' in case the user is not signed in or has no accounts
+
+### makeTransfer
+
+```typescript
+function makeTransfer({ recipient: string, asset: Asset, amount: number }): Promise<string>
+```
+
+Initiates a transfer of <code>amount asset</code> to <code>recipient</code> account. 
+
+The amount should always be an integer value. Therefore is is represented in the smallest, further non divisible units for the asset. E.g.: If the <code>asset</code> is ONG then the value is multiplied by 1000000000.
+
+Returns transaction Id.
+
+* Rejects with '''NO_ACCOUNT''' in case the user is not signed in or has no accounts
+* Rejects with '''MALFORMED_ACCOUNT''' in case the <code>recipient</code> is not a valid account
+* Rejects with '''CANCELED''' in case the user cancels the request
+
+## Identity
+
+A primary focus of Identity API is to interact with ONT ID smart contract on the blockchain.
+
+### getIdentity
+
+
+```typescript
+function getIdentity(): Promise<string>	
+```
+
+ Returns currently selected identity of logged in user.	
+ * Rejects with '''NO_IDENTITY''' in case the user is not signed in or has no identity
+
+
+### getDDO
+```typescript
+interface OntIdDDO {
+    ...
+}
+
+function getDDO({ identity: string }): Promise<OntIdDDO>
+```
+
+Queries Description Object of the <code>identity</code>. This call must query the blockchain. This operation is not signed and therefore does not require user interaction.
+
+Returns Description object of the <code>identity</code>. This object contains public keys and attributes of the identity.
+
+* Rejects with '''MALFORMED_IDENTITY''' in case the <code>identity</code> is not a valid identity
+
+### addAttributes
+
+```typescript
+function addAttributes({ attributes: OntIdAttribute[] }): Promise<void>
+```
+
+Initiates adding of attributes to the user identity. This action needs to be confirmed by the user. Attributes with existing <code>key</code> will be overwritten.
+
+* Rejects with '''NO_IDENTITY''' in case the user is not signed in or has no identity
+
+### removeAttribute
+```typescript
+function removeAttribute({ key: string }): Promise<void>
+```
+
+Initiates removing of attribute from the user identity. This action needs to be confirmed by the user.
+
+* Rejects with '''NO_IDENTITY''' in case the user is not signed in or has no identity
+
+
+## Message
+This API deals with arbitrary message signing and verification.
+
+### signMessageHash
+```typescript
+
+interface Signature {
+  publicKey: string;
+  data: string;
+}
+
+function signMessageHash({ messageHash: string }): Promise<Signature>
+```
+
+Initiates signing of arbitrary <code>messageHash</code> by the user account or identity. dAPI provider should provide the user with a way for selecting which account or identity will sign the message.
+
+Returns the <code>Signature</code> object containing both the <code>publicKey</code> and signature <code>data</code> needed for signature validation.
+
+This method does not require the dApp to disclose the message itself, only the hash. 
+
+Because malicious dApp can hash a real prepared transfer transaction and plant it for signing, that posses a risk to the user.
+Therefore the hash is prepended with known string '''Ontology message:''', and only this hash is put for signing.
+
+* Rejects with '''NO_ADDRESS''' in case the user is not signed in or has no account or identity
+* Rejects with '''MALFORMED_MESSAGE''' in case the <code>message</code> is not hex encoded
+
+### verifyMessageHash
+```typescript
+function verifyMessageHash({ messageHash: string, signature: Signature }): Promise<boolean>
+```
+
+Verifies that the <code>signature</code> is valid signature of <code>messageHash</code>. 
+
+This method does not require the dApp to disclose the message itself, only the hash. The hash is prepended with known string '''Ontology message:''' and only this hash is put for verification.
+
+* Rejects with '''MALFORMED_MESSAGE''' in case the <code>message</code> is not hex encoded
+* Rejects with '''MALFORMED_SIGNATURE''' in case the <code>signature</code> is not in valid format
+
+### signMessage
+```typescript
+function signMessage({ message: string }): Promise<Signature>
+```
+
+Initiates signing of arbitrary <code>message</code> by the user account or identity. dAPI provider should provide the user with a way for selecting which account or identity will sign the message.
+
+Returns the <code>Signature</code> object containing both the <code>publicKey</code> and signature <code>data</code> needed for signature validation.
+
+This method provide the dAPI provider with the message body, which it should display to the user prior to signing (e.g.: a contract to sign).
+
+* Rejects with '''NO_ADDRESS''' in case the user is not signed in or has no account or identity
+
+### verifyMessage
+```typescript
+function verifyMessage({ message: string, signature: Signature }): Promise<boolean>
+```
+
+Verifies that the <code>signature</code> is valid signature of <code>message</code>. 
+
+* Rejects with '''MALFORMED_MESSAGE''' in case the <code>message</code> is not hex encoded
+* Rejects with '''MALFORMED_SIGNATURE''' in case the <code>signature</code> is not in valid format
+
+
+## SmartContract
+The main functionality of this component is invocation of smart contract methods.
+
+### invoke
+```typescript
+type ParameterType = 'Boolean' | 'Integer' | 'ByteArray' | 'Struct' | 'Map' | 'String';
+
+interface Parameter {
+    type: ParameterType;
+    value: any;
+}
+
+type Result = string[];
+
+interface Response {
+    transaction: string;
+    results: Result[];
+}
+
+function invoke({ contract: string, method: string, parameters?: Parameter[], 
+  gasPrice?: number, gasLimit?: number, requireIdentity?: boolean }): Promise<Response>
+```
+
+Initiates a <code>method</code> call to a smart <code>contract</code> with supplied <code>parameters</code>.
+The <code>gasPrice</code> and <code>gasLimit</code> are hints for the dAPI provider and it should allow user to override those values before signing. It is upto the dAPI provide to allow user select the payer's account.
+
+In case the smart contract requires the call to be signed also by an identity, parameter <code>requireIdentity</code> should be set to true.
+
+Smart code execution is two step process:
+
+* The transaction is send to the network.
+* The transaction is processed and recorded to the blockchain at a later time.
+
+The <code>invoke</code> function will finish only after the transaction is processed by the network. 
+
+Returns <code>transaction</code> hash and array of <code>results</code>.
+
+To output a result from smart contract, call Runtime.Notify method. For every such a call, one result will be outputed.
+
+* Rejects with '''NO_ACCOUNT''' in case the user is not signed in or has no accounts
+* Rejects with '''MALFORMED_CONTRACT''' in case the <code>contract</code> is not hex encoded contract address
+
+### invokeRead
+```typescript
+function invokeRead({ contract: string, method: string, parameters?: Parameter[] }): Promise<any>
+```
+
+Initiates a <code>method</code> call to a smart <code>contract</code> with supplied <code>parameters</code> in read only mode (preExec). This kind of method call does not write anything to blockchain and therefore does not need to be signed or paid for. It is processed without user interaction.
+
+Returns direct value returned by the smart contract execution. 
+
+* Rejects with '''MALFORMED_CONTRACT''' in case the <code>contract</code> is not hex encoded contract address
+
+
+### deploy
+```typescript
+function deploy({ code: string, name?: string, version?: string, author?: string, 
+    email?: string, description?: string, needStorage?: boolean, gasPrice?: number, gasLimit?: number }): Promise<any>
+```
+
+Initiates deployment of smart contract. The <code>code</code> parameter represents compiled code of smart contract for NEOVM. The <code>gasPrice</code> and <code>gasLimit</code> are hints for the dAPI provider and it should allow user to override those values before signing. It is upto the dAPI provide to allow user select the payer's account.
+
+* Rejects with '''NO_ACCOUNT''' in case the user is not signed in or has no accounts
+
+
+## Architecture
+The interaction between dApp and Ontology network can be described with this diagram:
+
+[[Image:OEP-6-1.svg|Architecture]]
+
+## External components
+Yellow colored components are external to this proposal.
+
+## dAPI.js
+Green colored components represent '''dAPI.js'''. It is universal implementation of communication channel for direct use by dApp developers in web browsers.
+
+## dAPI provider
+Blue colored components belong to specific implementation of dAPI provider. The implementation is out of scope of this proposal, but the implementator must adhere to the protocol used by dAPI.js.
+
+## Communication protocol
+The communication protocol has RPC style of communication. The RPC is modeled on top of standard WebExtension message passing using <code>runtime.sendMessage</code> and <code>runtime.onMessage.addListener</code>. All the complications of WebExtension is hidden for both the '''dApp''' and '''dAPI provider''' when using dAPI.js.
+
+dAPI providers might use dAPI.js as the communication protocol, but they can also implement different protocols suitable for the specific environment (e.g: iOS, Android, Desktop).
+
+# Rationale
+
+'''''User story''''': As a '''dApp''' developer, I need to use a lightweight api for integration with Ontology network without requiring my users to share their private keys with me.
+
+# Test Cases
+
+# Implementation of ontology-dapi
+OntologyCommunityDevelopers/ontology-dapi - https://github.com/OntologyCommunityDevelopers/ontology-dapi
+
+# Implementation of dAPI provider
+OntologyCommunityDevelopers/ontology-plugin-wallet - https://github.com/OntologyCommunityDevelopers/ontology-plugin-wallet
+
+
