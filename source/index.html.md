@@ -36,17 +36,17 @@ Currently a dApp will use one of the SDKs (Typescript, Java, Python, ...) to com
 
 This proposal makes use of the following functions and definitions:
 
-* ```SDK```, a software development kit implementing low level communication with the network and providing high level interface for dApps.
+* **SDK**, a software development kit implementing low level communication with the network and providing high level interface for dApps.
 
-* ```dApp```, an application with decentralised characteristics running in web environment. The application uses Ontology network for value transfers, contracts enforcing and identification between participants.
+* **dApp**, an application with decentralised characteristics running in web environment. The application uses Ontology network for value transfers, contracts enforcing and identification between participants.
 
-* ```dAPI```, the API for dApps this OEP is proposing.
+* **dAPI**, the API for dApps this OEP is proposing.
 
-* ```dAPI provider```, an implementation of the dAPI in the form of web browser plugin or other means, where a user interaction with the provider can be injected into api call workflow (e.g.: confirming transfer).
+* **dAPI provider**, an implementation of the dAPI in the form of web browser plugin or other means, where a user interaction with the provider can be injected into api call workflow (e.g.: confirming transfer).
 
-* ```Notify event```, an event broadcasted from smart contract execution.
+* **Notify event**, an event broadcasted from smart contract execution.
 
-* ```NEOVM```, a lightweight virtual machine for execution of Neo/Ontology smart contracts.
+* **NEOVM**, a lightweight virtual machine for execution of Neo/Ontology smart contracts.
 
 ## Asynchronicity and error handling
 
@@ -114,19 +114,19 @@ API specification is a complex document. Every method has some inputs and output
 
 Although this proposal is bringing clear and simple API for the dApps, the individual functions can be divided into these components:
 
-* ```Network```, a thin wrapper around the Ontology Node API, masking the complexity of rpc/rest calls and web-sockets with Request-Response facade.
+* **Network**, a thin wrapper around the Ontology Node API, masking the complexity of rpc/rest calls and web-sockets with Request-Response facade.
 
-* ```Provider```, functions for getting information about dAPI provider
+* **Provider**, functions for getting information about dAPI provider
 
-* ```Asset```, functions for transferring assets between user account and others.
+* **Asset**, functions for transferring assets between user account and others.
 
-* ```Identity```, functions for interacting with own ONT-ID identity.
+* **Identity**, functions for interacting with own ONT-ID identity.
 
-* ```SmartContract```, a high level wrapper around the Smart Contract invocation and deployment.
+* **SmartContract**, a high level wrapper around the Smart Contract invocation and deployment.
 
-* ```Message```, functions for signing arbitrary messages.
+* **Message**, functions for signing arbitrary messages.
 
-* ```Utils```, a group of utility function for encoding and decoding the data from/to blockchain.
+* **Utils**, a group of utility function for encoding and decoding the data from/to blockchain.
 
 ## Network
 
@@ -155,7 +155,7 @@ function getBalance({ address: string }): Promise<Balance>
 
 ```
 
-For further explanation about the wrapped method consult https://ontio.github.io/documentation/restful_api_en.html . The types ```Transaction```, ```Block```, ```MerkleProof``` and ```Balance``` corresponds to the exact object returned from Ontology blockchain.
+For further explanation about the wrapped method consult https://ontio.github.io/documentation/restful_api_en.html . The types **Transaction**, **Block**, **MerkleProof** and **Balance** corresponds to the exact object returned from Ontology blockchain.
 
 TODO: copy the definition of all network api calls with inputs and outputs from ontology documentation.
 
@@ -194,7 +194,7 @@ compatability: [
 
 dAPI provider does not need to support all future OEPs concerned with dAPI.
 
-* Rejects with ```NO_PROVIDER``` in case there is no dAPI provider installed.
+* Rejects with **NO_PROVIDER** in case there is no dAPI provider installed.
 
 ## Asset
 
@@ -406,7 +406,7 @@ Initiates deployment of smart contract. The <code>code</code> parameter represen
 ## Architecture
 The interaction between dApp and Ontology network can be described with this diagram:
 
-[[Image:OEP-6-1.svg|Architecture]]
+[[Image:https://github.com/backslash47/OEPs/blob/oep-dapp-api/OEP-6/OEP-6-1.svg|Architecture]]
 
 ## External components
 Yellow colored components are external to this proposal.
