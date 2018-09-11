@@ -110,6 +110,7 @@ All the functions of this dAPI, which requires arguments are using one typed arg
 
 API specification is a complex document. Every method has some inputs and outputs. Although we use the primitive types (numbers, strings, booleans) whenever possible, there are places where a complex object is required. To precisely describe the structure of those objects, we'd chosen Typescript-like syntax.
 
+
 ## Components
 
 Although this proposal is bringing clear and simple API for the dApps, the individual functions can be divided into these components:
@@ -127,6 +128,9 @@ Although this proposal is bringing clear and simple API for the dApps, the indiv
 * **Message**, functions for signing arbitrary messages.
 
 * **Utils**, a group of utility function for encoding and decoding the data from/to blockchain.
+
+
+# Components
 
 ## Network
 
@@ -403,35 +407,30 @@ Initiates deployment of smart contract. The <code>code</code> parameter represen
 * Rejects with ```NO_ACCOUNT``` in case the user is not signed in or has no accounts
 
 
-## Architecture
-The interaction between dApp and Ontology network can be described with this diagram:
 
-![image](https://github.com/backslash47/OEPs/blob/oep-dapp-api/OEP-6/OEP-6-1.svg)
 
-## External components
-Yellow colored components are external to this proposal.
+# Repo
 
-## dAPI.js
+## ontology-dapi
+
 Green colored components represent ```dAPI.js```. It is universal implementation of communication channel for direct use by dApp developers in web browsers.
 
+https://github.com/OntologyCommunityDevelopers/ontology-dapi
+
 ## dAPI provider
+
 Blue colored components belong to specific implementation of dAPI provider. The implementation is out of scope of this proposal, but the implementator must adhere to the protocol used by dAPI.js.
+
+https://github.com/OntologyCommunityDevelopers/ontology-plugin-wallet
+
 
 ## Communication protocol
 The communication protocol has RPC style of communication. The RPC is modeled on top of standard WebExtension message passing using <code>runtime.sendMessage</code> and <code>runtime.onMessage.addListener</code>. All the complications of WebExtension is hidden for both the ```dApp```' and ```dAPI provider``` when using dAPI.js.
 
 dAPI providers might use dAPI.js as the communication protocol, but they can also implement different protocols suitable for the specific environment (e.g: iOS, Android, Desktop).
 
-# Rationale
+## Architecture
+The interaction between dApp and Ontology network can be described with this diagram:
+https://github.com/backslash47/OEPs/blob/oep-dapp-api/OEP-6/OEP-6-1.svg
 
-```User story```: As a ```dApp``` developer, I need to use a lightweight api for integration with Ontology network without requiring my users to share their private keys with me.
-
-# Test Cases
-
-# Implementation of ontology-dapi
-OntologyCommunityDevelopers/ontology-dapi - https://github.com/OntologyCommunityDevelopers/ontology-dapi
-
-# Implementation of dAPI provider
-OntologyCommunityDevelopers/ontology-plugin-wallet - https://github.com/OntologyCommunityDevelopers/ontology-plugin-wallet
-
-
+![image](https://github.com/backslash47/OEPs/blob/oep-dapp-api/OEP-6/OEP-6-1.svg)
