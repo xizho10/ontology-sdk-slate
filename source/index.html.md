@@ -6,7 +6,7 @@ language_tabs: # must be one of
 
 toc_footers:
   - <a href='https://github.com/ontio/ontology-dapi'>ontology-dapi</a>
-  - <a href='https://github.com/ontio/ontology-dapi-demo'>ontology-dapi-demo</a>
+  - <a href='https://github.com/OntologyCommunityDevelopers/ontology-dapi-demo'>ontology-dapi-demo</a>
   - <a href='https://ont.io'>Powered by Ontology</a>
 
 includes:
