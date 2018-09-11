@@ -36,21 +36,21 @@ Currently a dApp will use one of the SDKs (Typescript, Java, Python, ...) to com
 
 This proposal makes use of the following functions and definitions:
 
-*'''SDK''', a software development kit implementing low level communication with the network and providing high level interface for dApps.
+* ```SDK```, a software development kit implementing low level communication with the network and providing high level interface for dApps.
 
-*'''dApp''', an application with decentralised characteristics running in web environment. The application uses Ontology network for value transfers, contracts enforcing and identification between participants.
+* ```dApp```, an application with decentralised characteristics running in web environment. The application uses Ontology network for value transfers, contracts enforcing and identification between participants.
 
-*'''dAPI''', the API for dApps this OEP is proposing.
+* ```dAPI```, the API for dApps this OEP is proposing.
 
-*'''dAPI provider''', an implementation of the dAPI in the form of web browser plugin or other means, where a user interaction with the provider can be injected into api call workflow (e.g.: confirming transfer).
+* ```dAPI provider```, an implementation of the dAPI in the form of web browser plugin or other means, where a user interaction with the provider can be injected into api call workflow (e.g.: confirming transfer).
 
-*'''Notify event''', an event broadcasted from smart contract execution.
+* ```Notify event```, an event broadcasted from smart contract execution.
 
-*'''NEOVM''', a lightweight virtual machine for execution of Neo/Ontology smart contracts.
+* ```NEOVM```, a lightweight virtual machine for execution of Neo/Ontology smart contracts.
 
 ## Asynchronicity and error handling
 
-All the functions except '''Utils''' component are communicating with extension through asynchronious message channel. Therefore all the methods are returning Promises. 
+All the functions except ```Utils``` component are communicating with extension through asynchronious message channel. Therefore all the methods are returning Promises. 
 
 The promises will be either resolved immediately if no interaction with user UI or blockchain is required or later when the user action takes place/blockchain responds. In case the call to method trigger an error, the error code is transmitted in rejected promise. Specific error codes are described with every method.
 
@@ -79,7 +79,7 @@ interface Caller {
 ```
 ## Encoding
 
-The interaction with dAPI often requires specification of '''Address''', '''Identity''', '''Contract address''' or '''Public Key'''. Those concepts are represented by string representation with specific encodings.
+The interaction with dAPI often requires specification of ```Address```, ```Identity```, ```Contract address``` or ```Public Key```. Those concepts are represented by string representation with specific encodings.
 
 ### Address
 
@@ -114,19 +114,19 @@ API specification is a complex document. Every method has some inputs and output
 
 Although this proposal is bringing clear and simple API for the dApps, the individual functions can be divided into these components:
 
-* '''Network''', a thin wrapper around the Ontology Node API, masking the complexity of rpc/rest calls and web-sockets with Request-Response facade.
+* ```Network```, a thin wrapper around the Ontology Node API, masking the complexity of rpc/rest calls and web-sockets with Request-Response facade.
 
-* '''Provider''', functions for getting information about dAPI provider
+* ```Provider```, functions for getting information about dAPI provider
 
-* '''Asset''', functions for transferring assets between user account and others.
+* ```Asset```, functions for transferring assets between user account and others.
 
-* '''Identity''', functions for interacting with own ONT-ID identity.
+* ```Identity```, functions for interacting with own ONT-ID identity.
 
-* '''SmartContract''', a high level wrapper around the Smart Contract invocation and deployment.
+* ```SmartContract```, a high level wrapper around the Smart Contract invocation and deployment.
 
-* '''Message''', functions for signing arbitrary messages.
+* ```Message```, functions for signing arbitrary messages.
 
-* '''Utils''', a group of utility function for encoding and decoding the data from/to blockchain.
+* ```Utils```, a group of utility function for encoding and decoding the data from/to blockchain.
 
 ## Network
 
@@ -155,7 +155,7 @@ function getBalance({ address: string }): Promise<Balance>
 
 ```
 
-For further explanation about the wrapped method consult https://ontio.github.io/documentation/restful_api_en.html . The types '''Transaction''', '''Block''', '''MerkleProof''' and '''Balance''' corresponds to the exact object returned from Ontology blockchain.
+For further explanation about the wrapped method consult https://ontio.github.io/documentation/restful_api_en.html . The types ```Transaction```, ```Block```, ```MerkleProof``` and ```Balance``` corresponds to the exact object returned from Ontology blockchain.
 
 TODO: copy the definition of all network api calls with inputs and outputs from ontology documentation.
 
@@ -194,7 +194,7 @@ compatability: [
 
 dAPI provider does not need to support all future OEPs concerned with dAPI.
 
-* Rejects with '''NO_PROVIDER''' in case there is no dAPI provider installed.
+* Rejects with ```NO_PROVIDER``` in case there is no dAPI provider installed.
 
 ## Asset
 
@@ -208,7 +208,7 @@ function getAccount(): Promise<string>
 
 ```
 Returns currently selected account of logged in user. 	
- * Rejects with '''NO_ACCOUNT''' in case the user is not signed in or has no accounts
+ * Rejects with ```NO_ACCOUNT``` in case the user is not signed in or has no accounts
 
 ### makeTransfer
 
@@ -222,9 +222,9 @@ The amount should always be an integer value. Therefore is is represented in the
 
 Returns transaction Id.
 
-* Rejects with '''NO_ACCOUNT''' in case the user is not signed in or has no accounts
-* Rejects with '''MALFORMED_ACCOUNT''' in case the <code>recipient</code> is not a valid account
-* Rejects with '''CANCELED''' in case the user cancels the request
+* Rejects with ```NO_ACCOUNT``` in case the user is not signed in or has no accounts
+* Rejects with ```MALFORMED_ACCOUNT``` in case the <code>recipient</code> is not a valid account
+* Rejects with ```CANCELED``` in case the user cancels the request
 
 ## Identity
 
@@ -238,7 +238,7 @@ function getIdentity(): Promise<string>
 ```
 
  Returns currently selected identity of logged in user.	
- * Rejects with '''NO_IDENTITY''' in case the user is not signed in or has no identity
+ * Rejects with ```NO_IDENTITY``` in case the user is not signed in or has no identity
 
 
 ### getDDO
@@ -254,7 +254,7 @@ Queries Description Object of the <code>identity</code>. This call must query th
 
 Returns Description object of the <code>identity</code>. This object contains public keys and attributes of the identity.
 
-* Rejects with '''MALFORMED_IDENTITY''' in case the <code>identity</code> is not a valid identity
+* Rejects with ```MALFORMED_IDENTITY``` in case the <code>identity</code> is not a valid identity
 
 ### addAttributes
 
@@ -264,7 +264,7 @@ function addAttributes({ attributes: OntIdAttribute[] }): Promise<void>
 
 Initiates adding of attributes to the user identity. This action needs to be confirmed by the user. Attributes with existing <code>key</code> will be overwritten.
 
-* Rejects with '''NO_IDENTITY''' in case the user is not signed in or has no identity
+* Rejects with ```NO_IDENTITY``` in case the user is not signed in or has no identity
 
 ### removeAttribute
 ```typescript
@@ -273,7 +273,7 @@ function removeAttribute({ key: string }): Promise<void>
 
 Initiates removing of attribute from the user identity. This action needs to be confirmed by the user.
 
-* Rejects with '''NO_IDENTITY''' in case the user is not signed in or has no identity
+* Rejects with ```NO_IDENTITY``` in case the user is not signed in or has no identity
 
 
 ## Message
@@ -297,10 +297,10 @@ Returns the <code>Signature</code> object containing both the <code>publicKey</c
 This method does not require the dApp to disclose the message itself, only the hash. 
 
 Because malicious dApp can hash a real prepared transfer transaction and plant it for signing, that posses a risk to the user.
-Therefore the hash is prepended with known string '''Ontology message:''', and only this hash is put for signing.
+Therefore the hash is prepended with known string ```Ontology message:```, and only this hash is put for signing.
 
-* Rejects with '''NO_ADDRESS''' in case the user is not signed in or has no account or identity
-* Rejects with '''MALFORMED_MESSAGE''' in case the <code>message</code> is not hex encoded
+* Rejects with ```NO_ADDRESS``` in case the user is not signed in or has no account or identity
+* Rejects with ```MALFORMED_MESSAGE``` in case the <code>message</code> is not hex encoded
 
 ### verifyMessageHash
 ```typescript
@@ -309,10 +309,10 @@ function verifyMessageHash({ messageHash: string, signature: Signature }): Promi
 
 Verifies that the <code>signature</code> is valid signature of <code>messageHash</code>. 
 
-This method does not require the dApp to disclose the message itself, only the hash. The hash is prepended with known string '''Ontology message:''' and only this hash is put for verification.
+This method does not require the dApp to disclose the message itself, only the hash. The hash is prepended with known string ```Ontology message:``` and only this hash is put for verification.
 
-* Rejects with '''MALFORMED_MESSAGE''' in case the <code>message</code> is not hex encoded
-* Rejects with '''MALFORMED_SIGNATURE''' in case the <code>signature</code> is not in valid format
+* Rejects with ```MALFORMED_MESSAGE``` in case the <code>message</code> is not hex encoded
+* Rejects with ```MALFORMED_SIGNATURE``` in case the <code>signature</code> is not in valid format
 
 ### signMessage
 ```typescript
@@ -325,7 +325,7 @@ Returns the <code>Signature</code> object containing both the <code>publicKey</c
 
 This method provide the dAPI provider with the message body, which it should display to the user prior to signing (e.g.: a contract to sign).
 
-* Rejects with '''NO_ADDRESS''' in case the user is not signed in or has no account or identity
+* Rejects with ```NO_ADDRESS``` in case the user is not signed in or has no account or identity
 
 ### verifyMessage
 ```typescript
@@ -334,8 +334,8 @@ function verifyMessage({ message: string, signature: Signature }): Promise<boole
 
 Verifies that the <code>signature</code> is valid signature of <code>message</code>. 
 
-* Rejects with '''MALFORMED_MESSAGE''' in case the <code>message</code> is not hex encoded
-* Rejects with '''MALFORMED_SIGNATURE''' in case the <code>signature</code> is not in valid format
+* Rejects with ```MALFORMED_MESSAGE``` in case the <code>message</code> is not hex encoded
+* Rejects with ```MALFORMED_SIGNATURE``` in case the <code>signature</code> is not in valid format
 
 
 ## SmartContract
@@ -377,8 +377,8 @@ Returns <code>transaction</code> hash and array of <code>results</code>.
 
 To output a result from smart contract, call Runtime.Notify method. For every such a call, one result will be outputed.
 
-* Rejects with '''NO_ACCOUNT''' in case the user is not signed in or has no accounts
-* Rejects with '''MALFORMED_CONTRACT''' in case the <code>contract</code> is not hex encoded contract address
+* Rejects with ```NO_ACCOUNT``` in case the user is not signed in or has no accounts
+* Rejects with ```MALFORMED_CONTRACT``` in case the <code>contract</code> is not hex encoded contract address
 
 ### invokeRead
 ```typescript
@@ -389,7 +389,7 @@ Initiates a <code>method</code> call to a smart <code>contract</code> with suppl
 
 Returns direct value returned by the smart contract execution. 
 
-* Rejects with '''MALFORMED_CONTRACT''' in case the <code>contract</code> is not hex encoded contract address
+* Rejects with ```MALFORMED_CONTRACT``` in case the <code>contract</code> is not hex encoded contract address
 
 
 ### deploy
@@ -400,7 +400,7 @@ function deploy({ code: string, name?: string, version?: string, author?: string
 
 Initiates deployment of smart contract. The <code>code</code> parameter represents compiled code of smart contract for NEOVM. The <code>gasPrice</code> and <code>gasLimit</code> are hints for the dAPI provider and it should allow user to override those values before signing. It is upto the dAPI provide to allow user select the payer's account.
 
-* Rejects with '''NO_ACCOUNT''' in case the user is not signed in or has no accounts
+* Rejects with ```NO_ACCOUNT``` in case the user is not signed in or has no accounts
 
 
 ## Architecture
@@ -412,7 +412,7 @@ The interaction between dApp and Ontology network can be described with this dia
 Yellow colored components are external to this proposal.
 
 ## dAPI.js
-Green colored components represent '''dAPI.js'''. It is universal implementation of communication channel for direct use by dApp developers in web browsers.
+Green colored components represent ```dAPI.js```. It is universal implementation of communication channel for direct use by dApp developers in web browsers.
 
 ## dAPI provider
 Blue colored components belong to specific implementation of dAPI provider. The implementation is out of scope of this proposal, but the implementator must adhere to the protocol used by dAPI.js.
@@ -424,7 +424,7 @@ dAPI providers might use dAPI.js as the communication protocol, but they can als
 
 # Rationale
 
-'''''User story''''': As a '''dApp''' developer, I need to use a lightweight api for integration with Ontology network without requiring my users to share their private keys with me.
+```User story```: As a ```dApp``` developer, I need to use a lightweight api for integration with Ontology network without requiring my users to share their private keys with me.
 
 # Test Cases
 
