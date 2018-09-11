@@ -406,7 +406,7 @@ Initiates deployment of smart contract. The <code>code</code> parameter represen
 ## Architecture
 The interaction between dApp and Ontology network can be described with this diagram:
 
-[Architecture](https://github.com/backslash47/OEPs/blob/oep-dapp-api/OEP-6/OEP-6-1.svg)
+[[Image:https://github.com/backslash47/OEPs/blob/oep-dapp-api/OEP-6/OEP-6-1.svg|Architecture]]
 
 ## External components
 Yellow colored components are external to this proposal.
