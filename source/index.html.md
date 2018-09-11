@@ -1,11 +1,11 @@
 ---
-title: Ontology Smart Contract API Reference
+title: Ontology dAPI Reference
 
 language_tabs: # must be one of 
-  - python
+  - typescript
 
 toc_footers:
-  - <a href='https://github.com/ontio/ontology-dapi'>Check for more examples</a>
+  - <a href='https://github.com/ontio/ontology-dapi'>ontology-dapi</a>
   - <a href='https://ont.io'>Powered by Ontology</a>
 
 includes:
